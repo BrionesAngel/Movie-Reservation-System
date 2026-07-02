@@ -15,8 +15,8 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 @Table(name = "users", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"username"}),
-    @UniqueConstraint(columnNames = {"email"})
+    @UniqueConstraint(columnNames = { "username" }),
+    @UniqueConstraint(columnNames = { "email" })
 })
 public class User {
   @Id
@@ -25,6 +25,9 @@ public class User {
   private String username;
   private String password;
   private String email;
+
+  @Enumerated(EnumType.STRING)
+  private Role role;
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
