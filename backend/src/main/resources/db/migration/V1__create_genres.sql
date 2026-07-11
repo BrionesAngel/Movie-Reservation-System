@@ -1,0 +1,16 @@
+CREATE TABLE genres (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE movie_genres (
+    movie_id BIGINT NOT NULL REFERENCES movies(id),
+    genre_id BIGINT NOT NULL REFERENCES genres(id),
+    PRIMARY KEY (movie_id, genre_id)
+);
+
+INSERT INTO genres (name) VALUES
+('ACTION'),('ADVENTURE'),('ANIMATION'),('BIOGRAPHY'),('COMEDY'),
+('CRIME'),('DOCUMENTARY'),('DRAMA'),('FAMILY'),('FANTASY'),
+('HISTORY'),('HORROR'),('MUSICAL'),('MYSTERY'),('ROMANCE'),
+('SCI_FI'),('SPORT'),('SUPERHERO'),('THRILLER'),('WAR'),('WESTERN');

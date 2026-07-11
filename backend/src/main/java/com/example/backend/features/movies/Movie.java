@@ -1,5 +1,8 @@
 package com.example.backend.features.movies;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,8 +30,13 @@ public class Movie {
 
   @Column(length = 255, nullable = false)
   private String posterUrl;
-
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
-  private Genre genre;
+ 
+  @Builder.Default
+  @ManyToMany
+  @JoinTable(
+    name = "movie_genres",
+    joinColumns = @JoinColumn(name = "movie_id"),
+    inverseJoinColumns = @JoinColumn(name = "genre_id")
+  )
+  private List<Genre> genres = new ArrayList<>();
 }
