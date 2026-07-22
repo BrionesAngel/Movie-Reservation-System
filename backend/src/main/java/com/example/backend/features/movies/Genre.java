@@ -1,25 +1,21 @@
 package com.example.backend.features.movies;
 
-public enum Genre {
-    ACTION,
-    ADVENTURE,
-    ANIMATION,
-    BIOGRAPHY,
-    COMEDY,
-    CRIME,
-    DOCUMENTARY,
-    DRAMA,
-    FAMILY,
-    FANTASY,
-    HISTORY,
-    HORROR,
-    MUSICAL,
-    MYSTERY,
-    ROMANCE,
-    SCI_FI,
-    SPORT,
-    SUPERHERO,
-    THRILLER,
-    WAR,
-    WESTERN
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Table(name = "genres")
+public class Genre {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String name;
 }
