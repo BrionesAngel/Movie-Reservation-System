@@ -26,7 +26,7 @@ public class Movie {
   private String description;
 
   @Column(nullable = false)
-  private Integer duration;
+  private Short duration_minutes;
 
   @Column(length = 255, nullable = false)
   private String posterUrl;

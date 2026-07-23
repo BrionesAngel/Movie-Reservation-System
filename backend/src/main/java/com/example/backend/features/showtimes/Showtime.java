@@ -24,5 +24,5 @@ public class Showtime {
   @JoinColumn(name = "movie_id", nullable = false)
   private Movie movie;
 
-  private LocalDateTime date;
+  private LocalDateTime start_time;
 }

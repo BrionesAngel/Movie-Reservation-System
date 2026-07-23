@@ -1,5 +1,6 @@
 package com.example.backend.features.reservations;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -36,10 +37,10 @@ public class Reservation {
   @Column(nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 15)
   @Enumerated(EnumType.STRING)
   private ReservationStatus status;
  
   @Column(nullable = false)
-  private Double totalPrice;
+  private BigDecimal totalPrice;
 }
