@@ -2,6 +2,6 @@ CREATE TABLE movies (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   title VARCHAR(150) NOT NULL,
   description TEXT NOT NULL,
-  duration INT NOT NULL,
+  duration_minutes SMALLINT NOT NULL,
   poster_url VARCHAR(255) NOT NULL
 );
