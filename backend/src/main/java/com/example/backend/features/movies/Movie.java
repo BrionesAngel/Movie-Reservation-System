@@ -1,7 +1,7 @@
 package com.example.backend.features.movies;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -38,5 +38,5 @@ public class Movie {
     joinColumns = @JoinColumn(name = "movie_id"),
     inverseJoinColumns = @JoinColumn(name = "genre_id")
   )
-  private List<Genre> genres = new ArrayList<>();
+  private Set<Genre> genres = new HashSet<>();
 }
