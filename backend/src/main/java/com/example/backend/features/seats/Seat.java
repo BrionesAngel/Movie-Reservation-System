@@ -1,5 +1,7 @@
 package com.example.backend.features.seats;
 
+import com.example.backend.features.rooms.Room;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,10 +16,17 @@ public class Seat {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
+
+  @JoinColumn(name = "room_id", nullable = false)
+  private Room room;
  
-  @Column(nullable = false)
-  private Integer row;
+  @Column(length = 2, nullable = false)
+  private String row;
 
   @Column(nullable = false)
-  private Integer number;
+  private Short number;
+
+  @Enumerated(EnumType.STRING)
+  @Column(length = 15,nullable = false)
+  private SeatStatus status;
 }

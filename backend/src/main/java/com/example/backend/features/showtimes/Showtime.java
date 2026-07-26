@@ -3,6 +3,7 @@ package com.example.backend.features.showtimes;
 import java.time.LocalDateTime;
 
 import com.example.backend.features.movies.Movie;
+import com.example.backend.features.rooms.Room;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,7 +16,7 @@ import lombok.*;
 @Builder
 @Table(name = "showtimes")
 public class Showtime {
- 
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -24,5 +25,9 @@ public class Showtime {
   @JoinColumn(name = "movie_id", nullable = false)
   private Movie movie;
 
-  private LocalDateTime start_time;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "room_id", nullable = false)
+  private Room room;
+
+  private LocalDateTime startTime;
 }
