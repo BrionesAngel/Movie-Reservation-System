@@ -8,10 +8,13 @@ import com.example.backend.features.users.DTOs.ChangePasswordRequest;
 import com.example.backend.features.users.DTOs.UpdateUsernameRequest;
 import com.example.backend.features.users.exceptions.InvalidCurrentPasswordException;
 import com.example.backend.features.users.exceptions.PasswordMismatchException;
+import com.example.backend.features.users.exceptions.UserAlreadyAdminException;
 import com.example.backend.features.users.exceptions.UsernameAlreadyExistsException;
+import com.example.backend.shared.exceptions.ResourceNotFoundException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +22,18 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+
+  @Transactional
+  public void promoteUser(Long userId){
+    User user = userRepository.findById(userId)
+      .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+
+    if(user.getRole()==Role.ADMIN){
+      throw new UserAlreadyAdminException("User is already an Administrator");
+    }
+
+    user.setRole(Role.ADMIN);
+  }
 
   public User createUser(RegisterRequest request) {
     String nextUsername = request.username().trim();

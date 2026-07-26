@@ -1,8 +1,10 @@
 package com.example.backend.features.users;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +41,11 @@ public class UserController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @Valid @RequestBody ChangePasswordRequest request) {
     userService.changeMyPassword(userDetails.getUser(), request);
+  }
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @PatchMapping("{id}/promote")
+  public void promoteUser(@PathVariable Long userId) {
+    userService.promoteUser(userId);
   }
 }
