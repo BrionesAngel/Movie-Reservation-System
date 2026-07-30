@@ -18,7 +18,7 @@
     "@angular/forms": "^22.0.2",
     "@angular/platform-browser": "^22.0.2",
     "@angular/router": "^22.0.2",
-    "@sweetalert2/ngx-sweetalert2": "^14.1.4",
+    "@sweetalert2/ngx-sweetalert2": "^15.0.0",
     "ngx-toastr": "^20.0.5",
     "rxjs": "~7.8.2",
     "sweetalert2": "^11.26.25",
