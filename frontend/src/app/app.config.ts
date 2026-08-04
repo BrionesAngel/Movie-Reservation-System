@@ -7,6 +7,7 @@ import { provideSweetAlert2 } from '@sweetalert2/ngx-sweetalert2';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { refreshInterceptor } from './core/interceptors/refresh.interceptor';
 import { routes } from './app.routes';
+import { provideLucideIcons } from '@lucide/angular';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,5 +24,6 @@ export const appConfig: ApplicationConfig = {
       fireOnInit: false,
       dismissOnDestroy: true,
     }),
+    provideLucideIcons(),
   ],
 };
