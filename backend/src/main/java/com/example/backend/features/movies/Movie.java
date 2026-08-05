@@ -1,6 +1,9 @@
 package com.example.backend.features.movies;
 
 import java.util.Set;
+
+import com.example.backend.features.genres.Genre;
+
 import java.util.HashSet;
 
 import jakarta.persistence.*;
