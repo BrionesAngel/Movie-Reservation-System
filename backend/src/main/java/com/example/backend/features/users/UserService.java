@@ -50,6 +50,7 @@ public class UserService {
         .username(nextUsername)
         .password(passwordEncoder.encode(request.password()))
         .email(request.email())
+        .role(Role.USER)
         .build();
 
     return userRepository.save(user);

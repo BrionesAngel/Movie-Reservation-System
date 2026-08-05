@@ -1,15 +1,15 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { AuthResponse, LoginRequest } from '../../../core/models/auth.models';
+import { LoginRequest } from '../../../core/models/auth.models';
 import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <section class="min-h-screen bg-slate-100 px-4 py-12">
       <div class="mx-auto flex w-full max-w-md flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/70">

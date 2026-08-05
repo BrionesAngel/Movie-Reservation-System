@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
   private final UserService userService;
@@ -44,7 +44,7 @@ public class UserController {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PatchMapping("{id}/promote")
+  @PatchMapping("/{id}/promote")
   public void promoteUser(@PathVariable Long userId) {
     userService.promoteUser(userId);
   }
