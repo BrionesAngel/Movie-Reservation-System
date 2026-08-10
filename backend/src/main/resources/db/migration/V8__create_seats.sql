@@ -1,7 +1,9 @@
 CREATE TABLE seats (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   room_id BIGINT NOT NULL REFERENCES rooms(id),
-  row VARCHAR(2) NOT NULL,
+  row VARCHAR(1) NOT NULL,
   number SMALLINT NOT NULL,
-  status VARCHAR(15) NOT NULL
+  status VARCHAR(15) NOT NULL,
+
+  UNIQUE(room_id, row, number)
 );
