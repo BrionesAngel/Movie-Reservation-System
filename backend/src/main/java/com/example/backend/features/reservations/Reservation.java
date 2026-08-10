@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.backend.features.showtime_seats.ShowtimeSeat;
 import com.example.backend.features.showtimes.Showtime;
 import com.example.backend.features.users.User;
 
@@ -21,25 +22,29 @@ public class Reservation {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
- 
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
- 
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "showtime_id", nullable = false)
   private Showtime showtime;
 
   @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<ReservationSeat> seats;
-
-  @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
+  private List<ShowtimeSeat> seats;
 
   @Column(nullable = false, length = 15)
   @Enumerated(EnumType.STRING)
   private ReservationStatus status;
- 
+
+  @Column(nullable = false, updatable = false)
+  private LocalDateTime createdAt;
+
+  @Column(nullable = false)
+  private LocalDateTime reserveUntil;
+
   @Column(nullable = false)
   private BigDecimal totalPrice;
+
 }

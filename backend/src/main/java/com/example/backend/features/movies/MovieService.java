@@ -28,7 +28,7 @@ public class MovieService {
     Movie movie = Movie.builder()
         .title(request.title())
         .description(request.description())
-        .duration_minutes(request.duration_minutes())
+        .durationMinutes(request.durationMinutes())
         .posterUrl(request.posterUrl())
         .genres(genres)
         .build();
@@ -47,7 +47,7 @@ public class MovieService {
 
     movie.setTitle(request.title());
     movie.setDescription(request.description());
-    movie.setDuration_minutes(request.duration_minutes());
+    movie.setDurationMinutes(request.durationMinutes());
     movie.setPosterUrl(request.posterUrl());
     movie.setGenres(genres);
 
@@ -67,7 +67,7 @@ public class MovieService {
       movie.getId(),
       movie.getTitle(),
       movie.getDescription(),
-      movie.getDuration_minutes(),
+      movie.getDurationMinutes(),
       movie.getPosterUrl(),
       movie.getGenres());
   }

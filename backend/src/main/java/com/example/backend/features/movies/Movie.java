@@ -29,7 +29,7 @@ public class Movie {
   private String description;
 
   @Column(nullable = false)
-  private Short duration_minutes;
+  private Short durationMinutes;
 
   @Column(length = 255, nullable = false)
   private String posterUrl;
