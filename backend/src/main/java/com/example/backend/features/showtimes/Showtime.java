@@ -1,5 +1,6 @@
 package com.example.backend.features.showtimes;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.example.backend.features.movies.Movie;
@@ -29,5 +30,11 @@ public class Showtime {
   @JoinColumn(name = "room_id", nullable = false)
   private Room room;
 
+  @Column(nullable = false)
   private LocalDateTime startTime;
+
+  private LocalDateTime endTime;
+
+  @Column(nullable = false)
+  private BigDecimal price;
 }
