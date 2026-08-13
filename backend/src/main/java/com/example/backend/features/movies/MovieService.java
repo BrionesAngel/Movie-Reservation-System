@@ -1,5 +1,6 @@
 package com.example.backend.features.movies;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,12 @@ public class MovieService {
 
   private final MovieRepository movieRepository;
   private final GenreRepository genreRepository;
+
+  public List<MovieResponse> getMovies() {
+    return movieRepository.findAll().stream()
+        .map(this::toMovieResponse)
+        .toList();
+  }
 
   @Transactional
   public MovieResponse addMovie(MovieRequest request) {
@@ -54,7 +61,7 @@ public class MovieService {
     return this.toMovieResponse(movie);
   }
 
-  public void deleteMovie(Long id){
+  public void deleteMovie(Long id) {
     movieRepository.deleteById(id);
   }
 
@@ -62,13 +69,14 @@ public class MovieService {
     return genreRepository.findAllById(genreIds).stream()
         .collect(Collectors.toSet());
   }
-  public MovieResponse toMovieResponse(Movie movie){
+
+  public MovieResponse toMovieResponse(Movie movie) {
     return new MovieResponse(
-      movie.getId(),
-      movie.getTitle(),
-      movie.getDescription(),
-      movie.getDurationMinutes(),
-      movie.getPosterUrl(),
-      movie.getGenres());
+        movie.getId(),
+        movie.getTitle(),
+        movie.getDescription(),
+        movie.getDurationMinutes(),
+        movie.getPosterUrl(),
+        movie.getGenres());
   }
 }
