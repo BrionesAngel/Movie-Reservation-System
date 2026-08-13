@@ -19,6 +19,6 @@ public record CreateShowtimeRequest(
   LocalDateTime startTime,
 
   @NotNull(message = "price is required")
-  @DecimalMin(value = "0.0", inclusive = false, message = "price debe ser mayor a 0")
+  @DecimalMin(value = "0.0", inclusive = false, message = "price must be greater than 0")
   BigDecimal price
 ) {}

@@ -3,7 +3,7 @@ package com.example.backend.features.showtimes.DTOs;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record CreateShowtimeResponse(
+public record ShowtimeResponse(
   Long id,
   Long movie,
   Long room,
