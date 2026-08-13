@@ -17,6 +17,12 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class UsersExceptionHandler extends BaseExceptionHandler {
 
+  @ExceptionHandler(UserAlreadyAdminException.class)
+  public ResponseEntity<ErrorResponse> handleUserAlreadyAdmin(UserAlreadyAdminException ex) {
+    log.warn("User is already an administrator: {}", ex.getMessage());
+    return buildError(HttpStatus.CONFLICT, "USER_ALREADY_ADMIN");
+  }
+
   @ExceptionHandler(UsernameAlreadyExistsException.class)
   public ResponseEntity<ErrorResponse> handleUsernameAlreadyExists(UsernameAlreadyExistsException ex) {
     log.warn("Username already exists: {}", ex.getMessage());

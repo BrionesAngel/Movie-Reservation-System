@@ -26,10 +26,10 @@ public class UserService {
   @Transactional
   public void promoteUser(Long userId){
     User user = userRepository.findById(userId)
-      .orElseThrow(() -> new ResourceNotFoundException("User not Found"));
+      .orElseThrow(() -> new ResourceNotFoundException("User: " + userId + " not Found"));
 
     if(user.getRole()==Role.ADMIN){
-      throw new UserAlreadyAdminException("User is already an Administrator");
+      throw new UserAlreadyAdminException("User: " + user.getId() + "is already an Administrator");
     }
 
     user.setRole(Role.ADMIN);

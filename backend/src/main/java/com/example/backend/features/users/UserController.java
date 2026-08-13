@@ -44,7 +44,7 @@ public class UserController {
   }
 
   @PreAuthorize("hasRole('ADMIN')")
-  @PatchMapping("/{id}/promote")
+  @PatchMapping("/{userId}/promote")
   public void promoteUser(@PathVariable Long userId) {
     userService.promoteUser(userId);
   }
