@@ -11,7 +11,12 @@ import com.example.backend.features.movies.Movie;
 import com.example.backend.features.movies.MovieRepository;
 import com.example.backend.features.rooms.Room;
 import com.example.backend.features.rooms.RoomRepository;
+import com.example.backend.features.showtime_seats.ShowtimeSeat;
+import com.example.backend.features.showtime_seats.ShowtimeSeatRepository;
+import com.example.backend.features.showtime_seats.ShowtimeSeatService;
+import com.example.backend.features.showtime_seats.DTOs.ShowtimeSeatSummary;
 import com.example.backend.features.showtimes.DTOs.CreateShowtimeRequest;
+import com.example.backend.features.showtimes.DTOs.ShowtimeAndSeatsResponse;
 import com.example.backend.features.showtimes.DTOs.ShowtimeResponse;
 import com.example.backend.features.showtimes.exceptions.ShowtimeConflictException;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
@@ -27,7 +32,24 @@ public class ShowtimeService {
   private final ShowtimeRepository showtimeRepository;
   private final MovieRepository movieRepository;
   private final RoomRepository roomRepository;
+  private final ShowtimeSeatRepository showtimeSeatRepository;
+  private final ShowtimeSeatService showtimeSeatService;
 
+  @Transactional(readOnly = true)
+  public ShowtimeAndSeatsResponse getShowtimeAndShowtimeSeats(Long showtimeId) {
+    Showtime showtime = showtimeRepository.findById(showtimeId)
+        .orElseThrow(() -> new ResourceNotFoundException("showtime " + showtimeId + " not found"));
+
+    List<ShowtimeSeat> showtimeSeats = showtimeSeatRepository.findAllByShowtimeId(showtime.getId());
+
+    if (showtimeSeats.isEmpty()) {
+      throw new ResourceNotFoundException("no seats found for showtime " + showtime.getId());
+    }
+
+    return toShowtimeAndSeatsResponse(showtime, showtimeSeats);
+  }
+
+  @Transactional(readOnly = true)
   public List<ShowtimeResponse> getShowtimesByDate(LocalDate date) {
     LocalDateTime now = LocalDateTime.now();
 
@@ -67,6 +89,9 @@ public class ShowtimeService {
         .build();
 
     Showtime savedShowtime = showtimeRepository.save(showtime);
+
+    showtimeSeatService.createSeatsforShowtime(savedShowtime);
+
     return toShowtimeResponse(savedShowtime);
   }
 
@@ -78,6 +103,19 @@ public class ShowtimeService {
         showtime.getStartTime(),
         showtime.getEndTime(),
         showtime.getPrice());
+  }
+
+  public ShowtimeAndSeatsResponse toShowtimeAndSeatsResponse(Showtime showtime, List<ShowtimeSeat> seats) {
+    return new ShowtimeAndSeatsResponse(
+        showtime.getId(),
+        showtime.getMovie().getId(),
+        showtime.getRoom().getId(),
+        showtime.getStartTime(),
+        showtime.getEndTime(),
+        showtime.getPrice(),
+        seats.stream()
+            .map(s -> new ShowtimeSeatSummary(s.getId(), s.getSeat().getRow(), s.getSeat().getNumber(), s.getStatus()))
+            .toList());
   }
 
   public LocalDateTime calculateEndTime(LocalDateTime startTime, int durationMinutes) {
