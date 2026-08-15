@@ -7,4 +7,4 @@ CREATE TABLE showtimes (
   price DECIMAL(5,2) NOT NULL
 );
 
-CREATE INDEX idx_showtime_room_time ON showtimes (room_id, start_time, end_time);
+CREATE INDEX idx_showtimes_room_time ON showtimes (room_id, start_time, end_time);

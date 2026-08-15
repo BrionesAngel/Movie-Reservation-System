@@ -3,7 +3,9 @@ CREATE TABLE reservations (
   user_id BIGINT NOT NULL REFERENCES users(id),
   showtime_id BIGINT NOT NULL REFERENCES showtimes(id),
   status VARCHAR(15) NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL,
   reserve_until TIMESTAMP NOT NULL,
   total_price DECIMAL(8,2) NOT NULL
 );
+
+CREATE INDEX idx_reservations_date_status ON reservations(created_at, status)
