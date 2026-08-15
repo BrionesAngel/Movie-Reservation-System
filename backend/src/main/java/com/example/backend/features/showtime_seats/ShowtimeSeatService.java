@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.backend.features.seats.Seat;
 import com.example.backend.features.seats.SeatRepository;
 import com.example.backend.features.seats.SeatStatus;
+import com.example.backend.features.showtime_seats.DTOs.ShowtimeSeatSummary;
 import com.example.backend.features.showtimes.Showtime;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
 
@@ -34,5 +35,17 @@ public class ShowtimeSeatService {
         .toList();
 
     showtimeSeatRepository.saveAll(showtimeSeats);
+  }
+
+  public List<ShowtimeSeatSummary> toShowtimeSeatSummary(List<ShowtimeSeat> seats) {
+    List<ShowtimeSeatSummary> seatsSummary = seats.stream()
+        .map(s -> new ShowtimeSeatSummary(
+            s.getId(),
+            s.getSeat().getRow(),
+            s.getSeat().getNumber(),
+            s.getStatus()))
+        .toList();
+
+    return seatsSummary;
   }
 }
