@@ -7,9 +7,8 @@ import java.util.List;
 import com.example.backend.features.reservations.ReservationStatus;
 import com.example.backend.features.showtime_seats.DTOs.ShowtimeSeatSummary;
 
-public record ReservationResponse(
+public record ReservationSummaryResponse(
   Long id,
-  String clientSecret,
   Long userId,
   List<ShowtimeSeatSummary> seats,
   ReservationStatus status,

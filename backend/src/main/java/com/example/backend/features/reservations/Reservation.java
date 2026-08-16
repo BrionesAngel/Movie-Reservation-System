@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.backend.features.payments.Payment;
 import com.example.backend.features.showtime_seats.ShowtimeSeat;
 import com.example.backend.features.showtimes.Showtime;
 import com.example.backend.features.users.User;
@@ -47,4 +48,6 @@ public class Reservation {
   @Column(nullable = false)
   private BigDecimal totalPrice;
 
+  @OneToOne(mappedBy = "reservation")
+  private Payment payment;
 }

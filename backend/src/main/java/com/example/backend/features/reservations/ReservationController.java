@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.backend.features.auth.security.CustomUserDetails;
 import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
+import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class ReservationController {
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public List<ReservationResponse> getAllReservations(@RequestParam LocalDate date) {
+  public List<ReservationSummaryResponse> getAllReservations(@RequestParam LocalDate date) {
     return reservationService.getAllReservationsByDate(date);
   }
 

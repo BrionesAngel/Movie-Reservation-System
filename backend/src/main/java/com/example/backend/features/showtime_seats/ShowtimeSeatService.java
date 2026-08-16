@@ -20,6 +20,10 @@ public class ShowtimeSeatService {
   private final ShowtimeSeatRepository showtimeSeatRepository;
   private final SeatRepository seatRepository;
 
+  public void markSeatsAsBooked(List<ShowtimeSeat> seats) {
+    seats.forEach(s -> s.setStatus(ShowtimeSeatStatus.BOOKED));
+  }
+
   @Transactional
   public void createSeatsforShowtime(Showtime showtime) {
     List<Seat> seats = seatRepository.findAllByRoomId(showtime.getRoom().getId());

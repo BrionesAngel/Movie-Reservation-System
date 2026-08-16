@@ -9,8 +9,12 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.backend.features.payments.PaymentService;
+import com.example.backend.features.payments.DTOs.CreatePaymentResponse;
 import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
+import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
+import com.example.backend.features.reservations.execptions.ReservationExpiredException;
 import com.example.backend.features.showtime_seats.ShowtimeSeat;
 import com.example.backend.features.showtime_seats.ShowtimeSeatRepository;
 import com.example.backend.features.showtime_seats.ShowtimeSeatService;
@@ -31,13 +35,26 @@ public class ReservationService {
   private final ShowtimeRepository showtimeRepository;
   private final ShowtimeSeatRepository showtimeSeatRepository;
   private final ShowtimeSeatService showtimeSeatService;
+  private final PaymentService paymentService;
 
-  public List<ReservationResponse> getAllReservationsByDate(LocalDate date) {
+  @Transactional
+  public void markReservationAsBooked(Long reservationId) {
+    Reservation reservation = reservationRepository.findByIdWithSeats(reservationId)
+        .orElseThrow(() -> new ResourceNotFoundException("reservation not found: " + reservationId));
+
+    if (LocalDateTime.now().isAfter(reservation.getReserveUntil()))
+      throw new ReservationExpiredException("" + reservation.getId());
+
+    reservation.setStatus(ReservationStatus.BOOKED);
+    showtimeSeatService.markSeatsAsBooked(reservation.getSeats());
+  }
+
+  public List<ReservationSummaryResponse> getAllReservationsByDate(LocalDate date) {
     LocalDateTime startOfDay = date.atStartOfDay();
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
     return reservationRepository.findAllByCreatedAtBetweenWithSeats(startOfDay, endOfDay)
         .stream()
-        .map(r -> this.toReservationResponse(r, r.getSeats()))
+        .map(r -> this.toReservationSummaryResponse(r, r.getSeats()))
         .toList();
   }
 
@@ -79,11 +96,29 @@ public class ReservationService {
       s.setReservation(savedReservation);
     });
 
-    return this.toReservationResponse(savedReservation, seats);
+    long amountInCents = savedReservation.getTotalPrice().multiply(BigDecimal.valueOf(100)).longValueExact();
+
+    CreatePaymentResponse createPaymentResponse = paymentService.createPayment(amountInCents, savedReservation);
+
+    return this.toReservationResponse(savedReservation, createPaymentResponse.clientSecret(), seats);
   }
 
-  public ReservationResponse toReservationResponse(Reservation reservation, List<ShowtimeSeat> seats) {
+  public ReservationResponse toReservationResponse(Reservation reservation, String clientSecret,
+      List<ShowtimeSeat> seats) {
     return new ReservationResponse(
+        reservation.getId(),
+        clientSecret,
+        reservation.getUser().getId(),
+        showtimeSeatService.toShowtimeSeatSummary(seats),
+        reservation.getStatus(),
+        reservation.getCreatedAt(),
+        reservation.getReserveUntil(),
+        reservation.getTotalPrice());
+
+  }
+
+  public ReservationSummaryResponse toReservationSummaryResponse(Reservation reservation, List<ShowtimeSeat> seats) {
+    return new ReservationSummaryResponse(
         reservation.getId(),
         reservation.getUser().getId(),
         showtimeSeatService.toShowtimeSeatSummary(seats),
@@ -91,5 +126,7 @@ public class ReservationService {
         reservation.getCreatedAt(),
         reservation.getReserveUntil(),
         reservation.getTotalPrice());
+
   }
+
 }
