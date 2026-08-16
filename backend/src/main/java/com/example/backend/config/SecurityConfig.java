@@ -46,14 +46,15 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/auth/login",
-                                      "/api/auth/register",
-                                      "/api/auth/refresh",
-                                      "/v3/api-docs/**",
-                                      "/swagger-ui/**",
-                                      "/swagger-ui.html"
-        ).permitAll()
-        .requestMatchers("/api/auth/logout", "/api/test").authenticated()
+            .requestMatchers("/api/auth/login",
+                "/api/auth/register",
+                "/api/auth/refresh",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "api/webhooks/**")
+            .permitAll()
+            .requestMatchers("/api/auth/logout", "/api/test").authenticated()
             .anyRequest().authenticated())
         .exceptionHandling(exh -> exh
             .authenticationEntryPoint(
@@ -69,8 +70,7 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOrigins(List.of(
-        "http://localhost:4200"
-    ));
+        "http://localhost:4200"));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
     config.setAllowCredentials(true);

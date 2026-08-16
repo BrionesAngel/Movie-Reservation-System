@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: url_db
+    username: psql_user
+    password: psql_password
+
+jwt:
+  secret: jwt_token
+
+stripe:
+  secret.key: your_key
+  success.url: seccess_url
+  cancel.url: cancel_url
