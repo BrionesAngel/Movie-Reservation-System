@@ -52,7 +52,7 @@ public class SecurityConfig {
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html",
-                "api/webhooks/**")
+                "/api/webhooks/**")
             .permitAll()
             .requestMatchers("/api/auth/logout", "/api/test").authenticated()
             .anyRequest().authenticated())
