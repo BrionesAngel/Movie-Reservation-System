@@ -20,6 +20,13 @@ public class ShowtimeSeatService {
   private final ShowtimeSeatRepository showtimeSeatRepository;
   private final SeatRepository seatRepository;
 
+  public void markSeatsAsAvailable(List<ShowtimeSeat> seats) {
+    seats.forEach(s -> {
+      s.setStatus(ShowtimeSeatStatus.AVAILABLE);
+      s.setReservation(null);
+    });
+  }
+
   public void markSeatsAsBooked(List<ShowtimeSeat> seats) {
     seats.forEach(s -> s.setStatus(ShowtimeSeatStatus.BOOKED));
   }

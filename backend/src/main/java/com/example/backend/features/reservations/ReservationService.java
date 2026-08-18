@@ -38,15 +38,35 @@ public class ReservationService {
   private final PaymentService paymentService;
 
   @Transactional
+  public void markReservationAsCanceledIfExpired(Long reservationId) {
+    this.getReservationAndMarkCanceledIfExpired(reservationId);
+  }
+
+  @Transactional
+  public void markReservationAsCanceled(Long reservationId) {
+    Reservation reservation = this.getReservationByIdWithSeatsOrThrow(reservationId);
+    reservation.setStatus(ReservationStatus.CANCELED);
+    showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+  }
+
+  @Transactional
   public void markReservationAsBooked(Long reservationId) {
-    Reservation reservation = reservationRepository.findByIdWithSeats(reservationId)
-        .orElseThrow(() -> new ResourceNotFoundException("reservation not found: " + reservationId));
-
-    if (LocalDateTime.now().isAfter(reservation.getReserveUntil()))
-      throw new ReservationExpiredException("" + reservation.getId());
-
+    Reservation reservation = this.getReservationAndMarkCanceledIfExpired(reservationId);
     reservation.setStatus(ReservationStatus.BOOKED);
     showtimeSeatService.markSeatsAsBooked(reservation.getSeats());
+  }
+
+  @Transactional
+  public Reservation getReservationAndMarkCanceledIfExpired(Long reservationId) {
+    Reservation reservation = this.getReservationByIdWithSeatsOrThrow(reservationId);
+
+    if (LocalDateTime.now().isAfter(reservation.getReserveUntil())) {
+      reservation.setStatus(ReservationStatus.CANCELED);
+      showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+      throw new ReservationExpiredException("" + reservation.getId());
+    }
+
+    return reservation;
   }
 
   public List<ReservationSummaryResponse> getAllReservationsByDate(LocalDate date) {
@@ -126,6 +146,12 @@ public class ReservationService {
         reservation.getCreatedAt(),
         reservation.getReserveUntil(),
         reservation.getTotalPrice());
+
+  }
+
+  public Reservation getReservationByIdWithSeatsOrThrow(Long reservationId) {
+    return reservationRepository.findByIdWithSeats(reservationId)
+        .orElseThrow(() -> new ResourceNotFoundException("reservation not found: " + reservationId));
 
   }
 
