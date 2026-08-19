@@ -38,6 +38,16 @@ public class ReservationService {
   private final PaymentService paymentService;
 
   @Transactional
+  public void cancelReservation(Long userId, Long reservationId) {
+    Reservation reservation = reservationRepository.getReservationWithSeatsByIdAndUserId(reservationId, userId)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("reservation: " + reservationId + " of user: " + userId + "not found"));
+
+    reservation.setStatus(ReservationStatus.CANCELED);
+    showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+  }
+
+  @Transactional
   public void markReservationAsCanceledIfExpired(Long reservationId) {
     this.getReservationAndMarkCanceledIfExpired(reservationId);
   }

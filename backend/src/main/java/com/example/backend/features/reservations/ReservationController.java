@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +37,13 @@ public class ReservationController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @Valid @RequestBody ReservationRequest request) {
     return reservationService.createReservation(userDetails.getUser(), request);
+  }
+
+  @PatchMapping("/{reservationId}/cancel")
+  public void cancelReservation(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable Long reservationId) {
+    reservationService.cancelReservation(userDetails.getId(), reservationId);
   }
 
   @PreAuthorize("hasRole('ADMIN')")

@@ -28,4 +28,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           WHERE r.status = :status AND r.reserveUntil < :time
       """)
   List<Reservation> findAllByStatusAndReserveUntilBeforeWithSeats(ReservationStatus status, LocalDateTime time);
+
+  @Query("""
+      SELECT r FROM Reservation r
+      LEFT JOIN FETCH r.seats
+      WHERE r.id = :reservationId
+      AND r.user.id = :userId
+      """)
+  Optional<Reservation> getReservationWithSeatsByIdAndUserId(Long reservationId, Long userId);
 }
