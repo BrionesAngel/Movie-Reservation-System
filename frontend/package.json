@@ -20,6 +20,7 @@
     "@angular/router": "^22.0.2",
     "@lucide/angular": "^1.28.0",
     "@stomp/stompjs": "^7.3.0",
+    "@stripe/stripe-js": "^9.14.0",
     "@sweetalert2/ngx-sweetalert2": "^15.0.0",
     "ngx-toastr": "^20.0.5",
     "rxjs": "~7.8.2",
