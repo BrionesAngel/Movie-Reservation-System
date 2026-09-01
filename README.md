@@ -1,44 +1,25 @@
-# Spring Boot + Angular JWT Starter
+# Movie Reservation System
+## Stack: Spring Boot 4 + Angular 22 + PostgreSQL + Docker
 
-A fullstack starter template with simple JWT authentication.
+### Backend (Java 25, Gradle)
+- Auth: JWT-based (15min access + 7-day refresh tokens with BCrypt hashing, rotation, revocation)
+- Features: Movies, Genres (22 seeded), Rooms (5), Seats (124/room), Showtimes, Reservations, Payments (Stripe, MXN)
+- Key patterns: Optimistic locking on seat reservations, 5-minute payment window, scheduled job every 60s to expire unpaid reservations, Stripe webhook for async payment status
+- Extras: Springdoc OpenAPI (Swagger), WebSocket (STOMP), Flyway migrations (15), Lombok
 
-### Frontend
-* Angular 21
-* TailwindCSS
-### Backend
-* Spring Boot 4 
-### Database
-* Docker
-* PostgreSQL
+### Frontend (Angular 22, Tailwind 4, Bun)
+- Auth: Login/Register with reactive forms, JWT interceptors (attach token + auto-refresh on 401), route guards (authGuard/guestGuard/adminGuard)
+- Services: AuthService (signals-based), WebSocketService (STOMP/SockJS), UiFeedbackService (toastr + SweetAlert2), MovieService, ShowtimeService, ReservationService, GenreService, RoomService, UserService
+- User UI: Movies grid (only movies with active showtimes), Showtimes by day with date navigator, movie detail, seat selection grid, Stripe Elements payment, my reservations page
+- Admin UI: Movie CRUD, showtime creation, all-reservations table, user promotion
 
-Use this project to avoid rebuilding auth basics from scratch.
+## Backend Endpoints Added for the UI
+- `GET /api/users` — list all users (admin)
+- `GET /api/reservations/mine` — current user's reservations
+- `GET /api/genres` — list genres
+- `GET /api/rooms` — list rooms
+- `ReservationSummaryResponse` now includes `showtimeId`
 
-## Preview
-
-![Login](login.png)
-![Register](register.png)
-
-## Getting Started
-### Clone the repository
-```bash
-git clone https://github.com/BrionesAngel/springboot-angular-auth-starter.git
-cd springboot-angular-auth-starter
-```
-### Start PostgreSQL with Docker
-```bash
-docker compose --profile db up --build -d
-```
-### Backend
-```bash
-cd backend
-./gradlew bootRun --daemon
-```
-### Frontend
-```bash
-cd frontend
-bun install
-ng serve
-```
 
 ## Environment Variables
 Create a `.env` file in the root directory and configure the required environment variables.
