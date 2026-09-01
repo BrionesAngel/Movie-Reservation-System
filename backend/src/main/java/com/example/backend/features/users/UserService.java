@@ -1,9 +1,13 @@
 package com.example.backend.features.users;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import com.example.backend.features.auth.dto.RegisterRequest;
 import com.example.backend.features.auth.exceptions.DuplicateEmailException;
 import com.example.backend.features.users.DTOs.UserProfileResponse;
+import com.example.backend.features.users.DTOs.UserResponse;
 import com.example.backend.features.users.DTOs.ChangePasswordRequest;
 import com.example.backend.features.users.DTOs.UpdateUsernameRequest;
 import com.example.backend.features.users.exceptions.InvalidCurrentPasswordException;
@@ -22,6 +26,12 @@ public class UserService {
 
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
+
+  public List<UserResponse> getAllUsers() {
+    return userRepository.findAll().stream()
+        .map((User user) -> new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole()))
+        .toList();
+  }
 
   @Transactional
   public void promoteUser(Long userId){

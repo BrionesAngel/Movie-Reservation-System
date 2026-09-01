@@ -9,9 +9,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import com.example.backend.features.auth.security.CustomUserDetails;
 import com.example.backend.features.users.DTOs.ChangePasswordRequest;
 import com.example.backend.features.users.DTOs.UserProfileResponse;
+import com.example.backend.features.users.DTOs.UserResponse;
 import com.example.backend.features.users.DTOs.UpdateUsernameRequest;
 
 import jakarta.validation.Valid;
@@ -23,6 +26,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
   private final UserService userService;
+
+  @PreAuthorize("hasRole('ADMIN')")
+  @GetMapping
+  public List<UserResponse> getUsers() {
+    return userService.getAllUsers();
+  }
 
   @GetMapping("/me")
   public UserProfileResponse getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
