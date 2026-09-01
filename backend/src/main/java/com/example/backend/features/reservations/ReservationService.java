@@ -79,6 +79,13 @@ public class ReservationService {
     return reservation;
   }
 
+  public List<ReservationSummaryResponse> getMyReservations(User user) {
+    return reservationRepository.findAllByUserIdWithSeats(user.getId())
+        .stream()
+        .map(r -> this.toReservationSummaryResponse(r, r.getSeats()))
+        .toList();
+  }
+
   public List<ReservationSummaryResponse> getAllReservationsByDate(LocalDate date) {
     LocalDateTime startOfDay = date.atStartOfDay();
     LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
@@ -150,6 +157,7 @@ public class ReservationService {
   public ReservationSummaryResponse toReservationSummaryResponse(Reservation reservation, List<ShowtimeSeat> seats) {
     return new ReservationSummaryResponse(
         reservation.getId(),
+        reservation.getShowtime().getId(),
         reservation.getUser().getId(),
         showtimeSeatService.toShowtimeSeatSummary(seats),
         reservation.getStatus(),

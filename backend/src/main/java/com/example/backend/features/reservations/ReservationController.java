@@ -46,6 +46,13 @@ public class ReservationController {
     reservationService.cancelReservation(userDetails.getId(), reservationId);
   }
 
+  @GetMapping("/mine")
+  @ResponseStatus(HttpStatus.OK)
+  public List<ReservationSummaryResponse> getMyReservations(
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    return reservationService.getMyReservations(userDetails.getUser());
+  }
+
   @PreAuthorize("hasRole('ADMIN')")
   @GetMapping
   @ResponseStatus(HttpStatus.OK)

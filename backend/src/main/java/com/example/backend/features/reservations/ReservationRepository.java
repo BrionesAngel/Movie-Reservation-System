@@ -18,6 +18,14 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
   @Query("""
         SELECT r FROM Reservation r
         LEFT JOIN FETCH r.seats
+        WHERE r.user.id = :userId
+        ORDER BY r.createdAt DESC
+      """)
+  List<Reservation> findAllByUserIdWithSeats(Long userId);
+
+  @Query("""
+        SELECT r FROM Reservation r
+        LEFT JOIN FETCH r.seats
         WHERE r.id = :reservationId
       """)
   Optional<Reservation> findByIdWithSeats(Long reservationId);

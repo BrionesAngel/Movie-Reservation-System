@@ -9,6 +9,7 @@ import com.example.backend.features.showtime_seats.DTOs.ShowtimeSeatSummary;
 
 public record ReservationSummaryResponse(
   Long id,
+  Long showtimeId,
   Long userId,
   List<ShowtimeSeatSummary> seats,
   ReservationStatus status,
