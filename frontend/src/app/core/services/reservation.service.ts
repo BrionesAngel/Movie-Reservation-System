@@ -1,4 +1,4 @@
-import { Service, inject, signal } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -12,8 +12,6 @@ import {
 export class ReservationService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
-
-  readonly lastReservation = signal<ReservationResponse | null>(null);
 
   createReservation(request: ReservationRequest): Observable<ReservationResponse> {
     return this.http.post<ReservationResponse>(
@@ -35,6 +33,13 @@ export class ReservationService {
     return this.http.get<Reservation[]>(`${this.apiUrl}/api/reservations/mine`, {
       withCredentials: true
     });
+  }
+
+  getReservationPayment(reservationId: number): Observable<ReservationResponse> {
+    return this.http.get<ReservationResponse>(
+      `${this.apiUrl}/api/reservations/${reservationId}/payment`,
+      { withCredentials: true }
+    );
   }
 
   getAllReservations(date: string): Observable<Reservation[]> {

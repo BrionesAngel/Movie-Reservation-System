@@ -7,8 +7,10 @@ import { ShowtimeSeatSummary } from '../../../core/models/seat.model';
   imports: [],
   template: `
     <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div class="mb-6 flex items-center justify-center">
-        <div class="h-2 w-3/4 rounded-full bg-slate-200"></div>
+      <div class="mb-6 flex justify-center">
+        <div class="flex h-9 w-3/4 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold tracking-[0.35em] text-slate-500 uppercase">
+          Screen
+        </div>
       </div>
 
       <div class="space-y-2">

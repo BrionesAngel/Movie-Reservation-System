@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { loadStripe, Stripe } from '@stripe/stripe-js';
+import { lastValueFrom } from 'rxjs';
+import { loadStripe, Stripe, StripeCardElement } from '@stripe/stripe-js';
+import Swal from 'sweetalert2';
 import { environment } from '../../../../environments/environment';
 import { ReservationResponse } from '../../../core/models/reservation.model';
 import { ReservationService } from '../../../core/services/reservation.service';
@@ -45,14 +47,24 @@ import { formatDateTime } from '../../../core/utils/date.utils';
             <p class="mt-4 text-sm text-slate-500">Processing payment...</p>
           }
 
-          <button
-            class="mt-5 w-full rounded-xl bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-6 py-3 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-            type="button"
-            [disabled]="processing() || resolved()"
-            (click)="pay()"
-          >
-            {{ resolved() ? 'Payment submitted' : processing() ? 'Processing...' : 'Pay now' }}
-          </button>
+          <div class="mt-5 flex flex-col-reverse gap-3 sm:flex-row">
+            <button
+              class="flex-1 rounded-xl border border-slate-300 px-6 py-3 font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              [disabled]="processing() || resolved()"
+              (click)="cancel()"
+            >
+              Cancel
+            </button>
+            <button
+              class="flex-1 rounded-xl bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-6 py-3 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              [disabled]="processing() || resolved()"
+              (click)="pay()"
+            >
+              {{ resolved() ? 'Payment submitted' : processing() ? 'Processing...' : 'Pay now' }}
+            </button>
+          </div>
 
           <p class="mt-4 text-center text-xs text-slate-400">
             Use test card 4242 4242 4242 4242, any future expiry, any CVC.
@@ -91,6 +103,7 @@ export class PaymentPage {
   );
 
   private stripe?: Stripe | null;
+  private cardElement?: StripeCardElement;
 
   constructor() {
     void this.init();
@@ -98,15 +111,20 @@ export class PaymentPage {
 
   private async init(): Promise<void> {
     const reservationId = Number(this.route.snapshot.paramMap.get('reservationId'));
-    const reservation = this.reservationService.lastReservation();
-
-    if (!reservation || reservation.id !== reservationId) {
+    if (!reservationId) {
       this.error.set('No active reservation found for payment.');
       this.loading.set(false);
       return;
     }
 
-    this.reservation.set(reservation);
+    try {
+      const reservation = await lastValueFrom(this.reservationService.getReservationPayment(reservationId));
+      this.reservation.set(reservation);
+    } catch {
+      this.error.set('This reservation cannot be paid. It may have expired or no longer be available for payment.');
+      this.loading.set(false);
+      return;
+    }
 
     try {
       this.stripe = await loadStripe(environment.stripePublicKey);
@@ -117,7 +135,8 @@ export class PaymentPage {
 
       await new Promise((resolve) => setTimeout(resolve, 0));
       if (typeof document !== 'undefined') {
-        this.stripe.elements().create('card').mount('#card-element');
+        this.cardElement = this.stripe.elements().create('card');
+        this.cardElement.mount('#card-element');
       }
     } catch {
       this.error.set('Stripe failed to load. Please try again later.');
@@ -126,15 +145,48 @@ export class PaymentPage {
     }
   }
 
+  async cancel(): Promise<void> {
+    const reservation = this.reservation();
+    if (!reservation || this.processing() || this.resolved()) return;
+
+    const confirmed = await Swal.fire({
+      title: 'Cancel reservation',
+      text: `Are you sure you want to cancel this reservation for ${this.seatsLabel()}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#e11d48',
+      confirmButtonText: 'Cancel reservation'
+    });
+
+    if (!confirmed.isConfirmed) return;
+
+    this.processing.set(true);
+    this.error.set(null);
+    try {
+      await lastValueFrom(this.reservationService.cancelReservation(reservation.id));
+      await this.router.navigate(['/home/reservations'], {
+        queryParams: { canceled: 'true' }
+      });
+    } catch {
+      this.error.set('Failed to cancel the reservation.');
+      this.processing.set(false);
+    }
+  }
+
   async pay(): Promise<void> {
     const stripe = this.stripe;
+    const cardElement = this.cardElement;
     const reservation = this.reservation();
-    if (!stripe || !reservation || this.processing() || this.resolved()) return;
+    if (!stripe || !cardElement || !reservation || this.processing() || this.resolved()) return;
 
     this.processing.set(true);
     this.error.set(null);
 
-    const result = await stripe.confirmCardPayment(reservation.clientSecret);
+    const result = await stripe.confirmCardPayment(reservation.clientSecret, {
+      payment_method: {
+        card: cardElement
+      }
+    });
 
     if (result.error) {
       this.error.set(result.error.message ?? 'Payment failed. Please try again.');

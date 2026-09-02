@@ -8,9 +8,10 @@ import { addDays, today } from '../../core/utils/date.utils';
   template: `
     <div class="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
       <button
-        class="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100"
+        class="flex h-10 w-10 items-center justify-center rounded-full text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent"
         type="button"
         (click)="move(-1)"
+        [disabled]="!canGoBack()"
         aria-label="Previous day"
       >
         <span class="text-2xl leading-none">&lsaquo;</span>
@@ -40,6 +41,7 @@ export class DateNavigatorComponent {
   readonly dateChange = output<Date>();
 
   readonly isToday = computed(() => this.selectedDate().toDateString() === today().toDateString());
+  readonly canGoBack = computed(() => !this.isToday());
   readonly dayLabel = computed(() =>
     this.selectedDate().toLocaleDateString('en-US', { weekday: 'long' })
   );
