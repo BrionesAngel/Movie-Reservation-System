@@ -39,6 +39,14 @@ public class ReservationController {
     return reservationService.createReservation(userDetails.getUser(), request);
   }
 
+  @GetMapping("/{reservationId}/payment")
+  @ResponseStatus(HttpStatus.OK)
+  public ReservationResponse getReservationPayment(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable Long reservationId) {
+    return reservationService.getReservationPaymentDetails(userDetails.getId(), reservationId);
+  }
+
   @PatchMapping("/{reservationId}/cancel")
   public void cancelReservation(
       @AuthenticationPrincipal CustomUserDetails userDetails,

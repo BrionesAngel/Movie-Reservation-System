@@ -15,6 +15,7 @@ import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
 import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
 import com.example.backend.features.reservations.execptions.ReservationExpiredException;
+import com.example.backend.features.reservations.execptions.ReservationNotCancellableException;
 import com.example.backend.features.showtime_seats.ShowtimeSeat;
 import com.example.backend.features.showtime_seats.ShowtimeSeatRepository;
 import com.example.backend.features.showtime_seats.ShowtimeSeatService;
@@ -42,6 +43,11 @@ public class ReservationService {
     Reservation reservation = reservationRepository.getReservationWithSeatsByIdAndUserId(reservationId, userId)
         .orElseThrow(
             () -> new ResourceNotFoundException("reservation: " + reservationId + " of user: " + userId + "not found"));
+
+    if (!reservation.getShowtime().getStartTime().isAfter(LocalDateTime.now())) {
+      throw new ReservationNotCancellableException(
+          "reservation for showtime: " + reservation.getShowtime().getId() + " has already started");
+    }
 
     reservation.setStatus(ReservationStatus.CANCELED);
     showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
@@ -84,6 +90,16 @@ public class ReservationService {
         .stream()
         .map(r -> this.toReservationSummaryResponse(r, r.getSeats()))
         .toList();
+  }
+
+  public ReservationResponse getReservationPaymentDetails(Long userId, Long reservationId) {
+    Reservation reservation = reservationRepository.getReservationWithSeatsByIdAndUserId(reservationId, userId)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("reservation: " + reservationId + " of user: " + userId + "not found"));
+
+    String clientSecret = paymentService.getClientSecretByReservationId(reservationId);
+
+    return this.toReservationResponse(reservation, clientSecret, reservation.getSeats());
   }
 
   public List<ReservationSummaryResponse> getAllReservationsByDate(LocalDate date) {

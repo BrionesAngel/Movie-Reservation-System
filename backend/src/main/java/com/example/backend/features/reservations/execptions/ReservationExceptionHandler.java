@@ -21,4 +21,11 @@ public class ReservationExceptionHandler extends BaseExceptionHandler {
 
   }
 
+  @ExceptionHandler(ReservationNotCancellableException.class)
+  public ResponseEntity<ErrorResponse> handleReservationNotCancellable(ReservationNotCancellableException ex) {
+    log.warn("Reservation cannot be cancelled: {}", ex.getMessage());
+    return buildError(HttpStatus.CONFLICT, "RESERVATION_NOT_CANCELLABLE");
+
+  }
+
 }
