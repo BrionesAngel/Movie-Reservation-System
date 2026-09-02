@@ -67,7 +67,7 @@ public class UserService {
   }
 
   public UserProfileResponse getMyProfile(User user) {
-    return new UserProfileResponse(user.getId(), user.getUsername(), user.getEmail());
+    return new UserProfileResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
   }
 
   public UserProfileResponse updateMyUsername(User user, UpdateUsernameRequest request) {
@@ -79,7 +79,7 @@ public class UserService {
     user.setUsername(nextUsername);
     userRepository.save(user);
 
-    return new UserProfileResponse(user.getId(), user.getUsername(), user.getEmail());
+    return new UserProfileResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
   }
 
   public void changeMyPassword(User user, ChangePasswordRequest request) {
