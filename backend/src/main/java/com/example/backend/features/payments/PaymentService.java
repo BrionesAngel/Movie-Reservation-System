@@ -23,6 +23,18 @@ public class PaymentService {
 
   private final PaymentRepository paymentRepository;
 
+  public String getClientSecretByReservationId(Long reservationId) {
+    Payment payment = paymentRepository.findByReservationId(reservationId)
+        .orElseThrow(() -> new ResourceNotFoundException("payment for reservation: " + reservationId + " not found"));
+
+    try {
+      PaymentIntent intent = PaymentIntent.retrieve(payment.getStripePaymentIntentId());
+      return intent.getClientSecret();
+    } catch (StripeException e) {
+      throw new PaymentProcessingException("" + e);
+    }
+  }
+
   public CreatePaymentResponse createPayment(long amount, Reservation reservation) {
     PaymentIntent intent;
     try {
