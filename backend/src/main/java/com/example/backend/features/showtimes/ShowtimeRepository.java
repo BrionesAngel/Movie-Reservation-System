@@ -16,4 +16,5 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
   """)
   boolean existsOverlapping(Long roomId, LocalDateTime startTime, LocalDateTime endTime);
   List<Showtime> findByStartTimeBetween(LocalDateTime rangeStart, LocalDateTime rangeEnd);
+  boolean existsByMovieId(Long movieId);
 }
