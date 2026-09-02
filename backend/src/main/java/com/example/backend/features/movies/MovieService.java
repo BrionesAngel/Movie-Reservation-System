@@ -11,6 +11,8 @@ import com.example.backend.features.genres.Genre;
 import com.example.backend.features.genres.GenreRepository;
 import com.example.backend.features.movies.DTOs.MovieRequest;
 import com.example.backend.features.movies.DTOs.MovieResponse;
+import com.example.backend.features.movies.exceptions.MovieHasShowtimesException;
+import com.example.backend.features.showtimes.ShowtimeRepository;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -21,11 +23,18 @@ public class MovieService {
 
   private final MovieRepository movieRepository;
   private final GenreRepository genreRepository;
+  private final ShowtimeRepository showtimeRepository;
 
   public List<MovieResponse> getMovies() {
     return movieRepository.findAll().stream()
         .map(this::toMovieResponse)
         .toList();
+  }
+
+  public MovieResponse getMovie(Long id) {
+    Movie movie = movieRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
+    return this.toMovieResponse(movie);
   }
 
   @Transactional
@@ -61,7 +70,15 @@ public class MovieService {
     return this.toMovieResponse(movie);
   }
 
+  @Transactional
   public void deleteMovie(Long id) {
+    movieRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
+
+    if (showtimeRepository.existsByMovieId(id)) {
+      throw new MovieHasShowtimesException("movie: " + id + " has related showtimes");
+    }
+
     movieRepository.deleteById(id);
   }
 

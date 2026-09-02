@@ -33,6 +33,12 @@ public class MovieController {
     return movieService.getMovies();
   }
 
+  @GetMapping("/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public MovieResponse getMovie(@PathVariable Long id) {
+    return movieService.getMovie(id);
+  }
+
   @PreAuthorize("hasRole('ADMIN')")
   @PostMapping("/add")
   @ResponseStatus(HttpStatus.CREATED)
