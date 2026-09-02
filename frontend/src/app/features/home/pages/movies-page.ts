@@ -21,7 +21,7 @@ import { MovieCardComponent } from '../../../shared/components/movie-card.compon
       @if (loading()) {
         <div class="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
           @for (item of placeholderCount; track $index) {
-            <div class="aspect-[2/3] animate-pulse rounded-2xl bg-slate-200"></div>
+            <div class="aspect-2/3 animate-pulse rounded-2xl bg-slate-200"></div>
           }
         </div>
       } @else if (error()) {

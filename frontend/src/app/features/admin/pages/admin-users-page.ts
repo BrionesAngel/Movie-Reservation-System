@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
+import Swal from 'sweetalert2';
 import { AdminUser, UserService } from '../../../core/services/user.service';
 import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
 
@@ -97,6 +98,17 @@ export class AdminUsersPage {
   }
 
   async promote(user: AdminUser): Promise<void> {
+    const confirmed = await Swal.fire({
+      title: 'Promote user',
+      text: `Are you sure you want to promote "${user.username}" to admin?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#7c3aed',
+      confirmButtonText: 'Promote'
+    });
+
+    if (!confirmed.isConfirmed) return;
+
     this.promoting.set(true);
     try {
       await lastValueFrom(this.userService.promoteUser(user.id));

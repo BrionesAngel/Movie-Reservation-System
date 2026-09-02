@@ -17,7 +17,7 @@ import { AuthService } from '../../core/services/auth.service';
 
         <nav class="flex-1 space-y-1 px-3 py-4">
           <a
-            routerLink="/movies"
+            routerLink="/home/movies"
             routerLinkActive="bg-violet-50 text-violet-700"
             [routerLinkActiveOptions]="{ exact: true }"
             class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
@@ -25,14 +25,14 @@ import { AuthService } from '../../core/services/auth.service';
             Movies
           </a>
           <a
-            routerLink="/showtimes"
+            routerLink="/home/showtimes"
             routerLinkActive="bg-violet-50 text-violet-700"
             class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
           >
             Showtimes
           </a>
           <a
-            routerLink="/reservations"
+            routerLink="/home/reservations"
             routerLinkActive="bg-violet-50 text-violet-700"
             [routerLinkActiveOptions]="{ exact: true }"
             class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100"
