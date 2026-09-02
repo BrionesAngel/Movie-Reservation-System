@@ -3,9 +3,15 @@ import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-export const adminGuard: CanActivateFn = async (): Promise<boolean | UrlTree> => {
+export const adminGuard: CanActivateFn = async (_route, state): Promise<boolean | UrlTree> => {
   const authService = inject(AuthService);
   const router = inject(Router);
+
+  if (!authService.isAuthenticated()) {
+    return router.createUrlTree(['/login'], {
+      queryParams: { redirectTo: state.url }
+    });
+  }
 
   if (!authService.currentUser()) {
     await lastValueFrom(authService.currentUser$());
@@ -15,5 +21,5 @@ export const adminGuard: CanActivateFn = async (): Promise<boolean | UrlTree> =>
     return true;
   }
 
-  return router.createUrlTree(['/movies']);
+  return router.createUrlTree(['/home/movies']);
 };

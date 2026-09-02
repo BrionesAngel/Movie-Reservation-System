@@ -1,5 +1,5 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080',
-  stripePublicKey: 'pk_test_replace'
+  production: true,
+  apiUrl: 'https://movie-reservation-system-sry3.onrender.com',
+  stripePublicKey: 'pk_test_51UB7aELMqdPe1xZioiNZ9QnHJPCD4aEmqRyMpu0bWOKJNdXemv40GbYHy6rX9EMPY5KddXpAKg1pebyVWSxTgzaL00eOp7R46N'
 };

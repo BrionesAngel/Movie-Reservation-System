@@ -10,7 +10,8 @@ import {
   LoginRequest,
   RefreshTokenResponse,
   RegisterRequest,
-  User
+  User,
+  UserProfile
 } from '../models/auth.models';
 
 @Service()
@@ -35,7 +36,6 @@ export class AuthService {
     return this.http.post<AuthResponse>(this.endpoint('/api/auth/login'), credentials, { withCredentials: true }).pipe(
       tap((response) => {
         this.saveTokens(response.accessToken, response.refreshToken);
-        this.currentUser.set(response.user);
       }),
       catchError((err) => {
         this.error.set(err?.error?.message ?? 'Unable to sign in.');
@@ -52,7 +52,6 @@ export class AuthService {
     return this.http.post<AuthResponse>(this.endpoint('/api/auth/register'), data, { withCredentials: true }).pipe(
       tap((response) => {
         this.saveTokens(response.accessToken, response.refreshToken);
-        this.currentUser.set(response.user);
       }),
       catchError((err) => {
         this.error.set(err?.error?.message ?? 'Unable to complete registration.');
@@ -88,12 +87,17 @@ export class AuthService {
   currentUser$(): Observable<User | null> {
     this.loading.set(true);
 
-    return this.http.get<User>(this.endpoint('/api/users/me'), { withCredentials: true }).pipe(
+    return this.http.get<UserProfile>(this.endpoint('/api/users/me'), { withCredentials: true }).pipe(
+      map((profile) => ({
+        id: profile.id,
+        username: profile.userName,
+        email: profile.email,
+        role: profile.role
+      })),
       tap((user) => {
         this.currentUser.set(user);
         this.error.set(null);
       }),
-      map((user) => user ?? null),
       catchError(() => {
         this.currentUser.set(null);
         return of(null);

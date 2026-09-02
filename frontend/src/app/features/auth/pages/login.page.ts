@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { lastValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginRequest } from '../../../core/models/auth.models';
 import { CommonModule } from '@angular/common';
@@ -81,8 +82,11 @@ export class LoginComponent {
     const credentials: LoginRequest = this.loginForm.getRawValue();
 
     this.authService.login(credentials).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
+      next: async () => {
+        await lastValueFrom(this.authService.currentUser$());
+        const user = this.authService.currentUser();
+        const target = user?.role === 'ADMIN' ? '/admin/movies' : '/home/movies';
+        this.router.navigate([target]);
       },
       error: () => {
         this.error.set('Credenciales inválidas');

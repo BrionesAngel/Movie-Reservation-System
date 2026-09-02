@@ -5,6 +5,13 @@ export interface User {
   role: string;
 }
 
+export interface UserProfile {
+  id: number;
+  userName: string;
+  email: string;
+  role: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

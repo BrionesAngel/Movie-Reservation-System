@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { lastValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 
 
@@ -124,8 +125,9 @@ export class RegisterComponent {
     const { confirmPassword, ...credentials } = this.registerForm.getRawValue();
 
     this.authService.register(credentials).subscribe({
-      next: () => {
-        this.router.navigate(['/dashboard']);
+      next: async () => {
+        await lastValueFrom(this.authService.currentUser$());
+        this.router.navigate(['/home/movies']);
       },
       error: () => {
         this.error.set('Credenciales inválidas');
