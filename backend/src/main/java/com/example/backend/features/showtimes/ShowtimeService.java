@@ -1,7 +1,10 @@
 package com.example.backend.features.showtimes;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -19,6 +22,8 @@ import com.example.backend.features.showtimes.DTOs.CreateShowtimeRequest;
 import com.example.backend.features.showtimes.DTOs.ShowtimeAndSeatsResponse;
 import com.example.backend.features.showtimes.DTOs.ShowtimeResponse;
 import com.example.backend.features.showtimes.exceptions.ShowtimeConflictException;
+import com.example.backend.features.showtimes.exceptions.ShowtimeInPastException;
+import com.example.backend.shared.constants.CinemaTime;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -51,16 +56,24 @@ public class ShowtimeService {
 
   @Transactional(readOnly = true)
   public List<ShowtimeResponse> getShowtimesByDate(LocalDate date) {
-    LocalDateTime now = LocalDateTime.now();
+    ZonedDateTime now = ZonedDateTime.now(CinemaTime.ZONE);
 
-    LocalDateTime rangeStart = date.equals(LocalDate.now())
-        ? now
-        : date.atStartOfDay();
+    Instant rangeStart = date.equals(now.toLocalDate())
+        ? now.toInstant()
+        : date.atStartOfDay(CinemaTime.ZONE).toInstant();
 
-    LocalDateTime rangeEnd = date.plusDays(1).atStartOfDay();
+    Instant rangeEnd = date.plusDays(1).atStartOfDay(CinemaTime.ZONE).toInstant();
 
     return showtimeRepository
         .findByStartTimeBetween(rangeStart, rangeEnd)
+        .stream()
+        .map(this::toShowtimeResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<ShowtimeResponse> getUpcomingShowtimes() {
+    return showtimeRepository.findByStartTimeAfterOrderByStartTimeAsc(Instant.now())
         .stream()
         .map(this::toShowtimeResponse)
         .toList();
@@ -74,16 +87,22 @@ public class ShowtimeService {
     Room room = roomRepository.findById(request.roomId())
         .orElseThrow(() -> new ResourceNotFoundException("Room " + request.roomId() + " not found"));
 
-    LocalDateTime endTime = calculateEndTime(request.startTime(), movie.getDurationMinutes());
+    Instant startTime = request.startTime().atZone(CinemaTime.ZONE).toInstant();
 
-    if (showtimeRepository.existsOverlapping(room.getId(), request.startTime(), endTime)) {
+    if (startTime.isBefore(Instant.now())) {
+      throw new ShowtimeInPastException("startTime cannot be in the past");
+    }
+
+    Instant endTime = calculateEndTime(startTime, movie.getDurationMinutes());
+
+    if (showtimeRepository.existsOverlapping(room.getId(), startTime, endTime)) {
       throw new ShowtimeConflictException("room " + room.getId() + " is already booked at that time");
     }
 
     Showtime showtime = Showtime.builder()
         .movie(movie)
         .room(room)
-        .startTime(request.startTime())
+        .startTime(startTime)
         .endTime(endTime)
         .price(request.price())
         .build();
@@ -100,8 +119,8 @@ public class ShowtimeService {
         showtime.getId(),
         showtime.getMovie().getId(),
         showtime.getRoom().getId(),
-        showtime.getStartTime(),
-        showtime.getEndTime(),
+        toLocalDateTime(showtime.getStartTime()),
+        toLocalDateTime(showtime.getEndTime()),
         showtime.getPrice());
   }
 
@@ -110,16 +129,20 @@ public class ShowtimeService {
         showtime.getId(),
         showtime.getMovie().getId(),
         showtime.getRoom().getId(),
-        showtime.getStartTime(),
-        showtime.getEndTime(),
+        toLocalDateTime(showtime.getStartTime()),
+        toLocalDateTime(showtime.getEndTime()),
         showtime.getPrice(),
         seats.stream()
             .map(s -> new ShowtimeSeatSummary(s.getId(), s.getSeat().getRow(), s.getSeat().getNumber(), s.getStatus()))
             .toList());
   }
 
-  public LocalDateTime calculateEndTime(LocalDateTime startTime, int durationMinutes) {
-    return startTime.plusMinutes(durationMinutes + CLEANING_ROOM_MINUTES);
+  public Instant calculateEndTime(Instant startTime, int durationMinutes) {
+    return startTime.plus(Duration.ofMinutes(durationMinutes + CLEANING_ROOM_MINUTES));
+  }
+
+  private LocalDateTime toLocalDateTime(Instant instant) {
+    return instant == null ? null : instant.atZone(CinemaTime.ZONE).toLocalDateTime();
   }
 
 }

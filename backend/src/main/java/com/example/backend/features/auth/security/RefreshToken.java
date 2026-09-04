@@ -1,6 +1,6 @@
 package com.example.backend.features.auth.security;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.example.backend.features.users.User;
 
@@ -45,9 +45,9 @@ public class RefreshToken {
 
   @Column(nullable = false, updatable = false)
   @Builder.Default
-  private LocalDateTime createdAt = LocalDateTime.now();
+  private Instant createdAt = Instant.now();
 
   @Column(nullable = false)
-  private LocalDateTime expiresAt;
+  private Instant expiresAt;
 
 }

@@ -1,6 +1,6 @@
 package com.example.backend.features.reservations;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,7 +13,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         LEFT JOIN FETCH r.seats
         WHERE r.createdAt BETWEEN :start AND :end
       """)
-  List<Reservation> findAllByCreatedAtBetweenWithSeats(LocalDateTime start, LocalDateTime end);
+  List<Reservation> findAllByCreatedAtBetweenWithSeats(Instant start, Instant end);
 
   @Query("""
         SELECT r FROM Reservation r
@@ -35,7 +35,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
           LEFT JOIN FETCH r.seats
           WHERE r.status = :status AND r.reserveUntil < :time
       """)
-  List<Reservation> findAllByStatusAndReserveUntilBeforeWithSeats(ReservationStatus status, LocalDateTime time);
+  List<Reservation> findAllByStatusAndReserveUntilBeforeWithSeats(ReservationStatus status, Instant time);
 
   @Query("""
       SELECT r FROM Reservation r

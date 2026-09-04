@@ -1,7 +1,7 @@
 package com.example.backend.features.showtimes;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.example.backend.features.movies.Movie;
 import com.example.backend.features.rooms.Room;
@@ -31,9 +31,9 @@ public class Showtime {
   private Room room;
 
   @Column(nullable = false)
-  private LocalDateTime startTime;
+  private Instant startTime;
 
-  private LocalDateTime endTime;
+  private Instant endTime;
 
   @Column(nullable = false)
   private BigDecimal price;

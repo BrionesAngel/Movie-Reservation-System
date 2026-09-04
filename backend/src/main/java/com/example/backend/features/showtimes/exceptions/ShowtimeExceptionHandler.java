@@ -19,4 +19,10 @@ public class ShowtimeExceptionHandler extends BaseExceptionHandler {
     log.warn("Username already exists: {}", ex.getMessage());
     return buildError(HttpStatus.CONFLICT, "a showtime is already booked at that time");
   }
+
+  @ExceptionHandler(ShowtimeInPastException.class)
+  public ResponseEntity<ErrorResponse> handleShowtimeInPast(ShowtimeInPastException ex) {
+    log.warn("Showtime in the past: {}", ex.getMessage());
+    return buildError(HttpStatus.BAD_REQUEST, "startTime cannot be in the past");
+  }
 }

@@ -1,9 +1,8 @@
 package com.example.backend.features.reservations;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -23,6 +22,7 @@ import com.example.backend.features.showtime_seats.ShowtimeSeatStatus;
 import com.example.backend.features.showtime_seats.exceptions.ShowtimeSeatNotAvailableException;
 import com.example.backend.features.showtimes.Showtime;
 import com.example.backend.features.showtimes.ShowtimeRepository;
+import com.example.backend.shared.constants.CinemaTime;
 import com.example.backend.features.users.User;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
 
@@ -44,13 +44,14 @@ public class ReservationService {
         .orElseThrow(
             () -> new ResourceNotFoundException("reservation: " + reservationId + " of user: " + userId + "not found"));
 
-    if (!reservation.getShowtime().getStartTime().isAfter(LocalDateTime.now())) {
+    if (!reservation.getShowtime().getStartTime().isAfter(Instant.now())) {
       throw new ReservationNotCancellableException(
           "reservation for showtime: " + reservation.getShowtime().getId() + " has already started");
     }
 
     reservation.setStatus(ReservationStatus.CANCELED);
     showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+    paymentService.refundPaymentIfSucceeded(reservation.getId());
   }
 
   @Transactional
@@ -76,7 +77,7 @@ public class ReservationService {
   public Reservation getReservationAndMarkCanceledIfExpired(Long reservationId) {
     Reservation reservation = this.getReservationByIdWithSeatsOrThrow(reservationId);
 
-    if (LocalDateTime.now().isAfter(reservation.getReserveUntil())) {
+    if (Instant.now().isAfter(reservation.getReserveUntil())) {
       reservation.setStatus(ReservationStatus.CANCELED);
       showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
       throw new ReservationExpiredException("" + reservation.getId());
@@ -103,8 +104,8 @@ public class ReservationService {
   }
 
   public List<ReservationSummaryResponse> getAllReservationsByDate(LocalDate date) {
-    LocalDateTime startOfDay = date.atStartOfDay();
-    LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+    Instant startOfDay = date.atStartOfDay(CinemaTime.ZONE).toInstant();
+    Instant endOfDay = date.plusDays(1).atStartOfDay(CinemaTime.ZONE).toInstant();
     return reservationRepository.findAllByCreatedAtBetweenWithSeats(startOfDay, endOfDay)
         .stream()
         .map(r -> this.toReservationSummaryResponse(r, r.getSeats()))
@@ -131,14 +132,14 @@ public class ReservationService {
     if (!notAvailableSeats.isEmpty())
       throw new ShowtimeSeatNotAvailableException("" + notAvailableSeats);
 
-    LocalDateTime now = LocalDateTime.now();
+    Instant now = Instant.now();
 
     Reservation reservation = Reservation.builder()
         .user(user)
         .showtime(showtime)
         .status(ReservationStatus.RESERVED)
         .createdAt(now)
-        .reserveUntil(now.plusMinutes(5))
+        .reserveUntil(now.plusSeconds(300))
         .totalPrice(showtime.getPrice().multiply(BigDecimal.valueOf(seats.size())))
         .build();
 
@@ -164,6 +165,7 @@ public class ReservationService {
         reservation.getUser().getId(),
         showtimeSeatService.toShowtimeSeatSummary(seats),
         reservation.getStatus(),
+        paymentService.getPaymentStatusByReservationId(reservation.getId()),
         reservation.getCreatedAt(),
         reservation.getReserveUntil(),
         reservation.getTotalPrice());
@@ -177,6 +179,7 @@ public class ReservationService {
         reservation.getUser().getId(),
         showtimeSeatService.toShowtimeSeatSummary(seats),
         reservation.getStatus(),
+        paymentService.getPaymentStatusByReservationId(reservation.getId()),
         reservation.getCreatedAt(),
         reservation.getReserveUntil(),
         reservation.getTotalPrice());

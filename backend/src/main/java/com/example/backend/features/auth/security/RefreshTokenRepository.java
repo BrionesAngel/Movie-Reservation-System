@@ -1,6 +1,6 @@
 package com.example.backend.features.auth.security;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,5 +21,5 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
   void revokeAllByUserId(@Param("userId") Long userId);
 
   @Query("SELECT rt FROM RefreshToken rt WHERE rt.user = :user AND rt.isRevoked = false AND rt.expiresAt > :now")
-  List<RefreshToken> findActiveTokensByUser(@Param("user") User user, @Param("now") LocalDateTime now);
+  List<RefreshToken> findActiveTokensByUser(@Param("user") User user, @Param("now") Instant now);
 }

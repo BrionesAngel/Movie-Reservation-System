@@ -40,6 +40,12 @@ public class ShowtimeController {
     return showtimeService.getShowtimesByDate(date);
   }
 
+  @GetMapping("/upcoming")
+  @ResponseStatus(HttpStatus.OK)
+  public List<ShowtimeResponse> getUpcomingShowtimes() {
+    return showtimeService.getUpcomingShowtimes();
+  }
+
   @PreAuthorize("hasRole('ADMIN')")
   @ResponseStatus(HttpStatus.CREATED)
   @PostMapping("/create")

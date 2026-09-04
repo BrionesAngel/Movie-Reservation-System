@@ -11,7 +11,8 @@ import com.example.backend.features.auth.security.RefreshTokenRepository;
 import com.example.backend.features.users.User;
 import com.example.backend.features.users.UserRepository;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -32,9 +33,9 @@ public class RefreshTokenService {
     RefreshToken refreshToken = RefreshToken.builder()
         .user(user)
         .tokenHash(tokenHash)
-        .expiresAt(LocalDateTime.now().plusDays(7))
+        .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
         .isRevoked(false)
-        .createdAt(LocalDateTime.now())
+        .createdAt(Instant.now())
         .build();
 
     refreshTokenRepository.save(refreshToken);
@@ -44,7 +45,7 @@ public class RefreshTokenService {
   public User validateAndGetUser(String tokenValue) {
     RefreshToken refreshToken = refreshTokenRepository.findAll().stream()
         .filter(rt -> !rt.isRevoked())
-        .filter(rt -> rt.getExpiresAt().isAfter(LocalDateTime.now()))
+        .filter(rt -> rt.getExpiresAt().isAfter(Instant.now()))
         .filter(rt -> BCrypt.checkpw(tokenValue, rt.getTokenHash()))
         .findFirst()
         .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
@@ -69,7 +70,7 @@ public class RefreshTokenService {
         .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
     RefreshToken refreshToken = refreshTokenRepository
-        .findActiveTokensByUser(user, LocalDateTime.now())
+        .findActiveTokensByUser(user, Instant.now())
         .stream()
         .filter(rt -> BCrypt.checkpw(refreshTokenValue, rt.getTokenHash()))
         .findFirst()

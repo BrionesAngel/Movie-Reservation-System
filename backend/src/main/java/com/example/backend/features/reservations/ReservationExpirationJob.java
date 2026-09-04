@@ -1,6 +1,6 @@
 package com.example.backend.features.reservations;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +22,7 @@ public class ReservationExpirationJob {
   @Transactional
   public void expireStaleReservations() {
     List<Reservation> expired = reservationRepository
-        .findAllByStatusAndReserveUntilBeforeWithSeats(ReservationStatus.RESERVED, LocalDateTime.now());
+        .findAllByStatusAndReserveUntilBeforeWithSeats(ReservationStatus.RESERVED, Instant.now());
 
     expired.forEach(r -> {
       r.setStatus(ReservationStatus.CANCELED);

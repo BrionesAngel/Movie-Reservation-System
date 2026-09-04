@@ -1,6 +1,6 @@
 package com.example.backend.features.showtimes;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,7 +14,8 @@ public interface ShowtimeRepository extends JpaRepository<Showtime, Long> {
     AND s.startTime < :endTime
     AND s.endTime > :startTime
   """)
-  boolean existsOverlapping(Long roomId, LocalDateTime startTime, LocalDateTime endTime);
-  List<Showtime> findByStartTimeBetween(LocalDateTime rangeStart, LocalDateTime rangeEnd);
+  boolean existsOverlapping(Long roomId, Instant startTime, Instant endTime);
+  List<Showtime> findByStartTimeBetween(Instant rangeStart, Instant rangeEnd);
+  List<Showtime> findByStartTimeAfterOrderByStartTimeAsc(Instant startTime);
   boolean existsByMovieId(Long movieId);
 }

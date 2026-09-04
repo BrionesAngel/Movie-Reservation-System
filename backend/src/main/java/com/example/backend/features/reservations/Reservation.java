@@ -1,7 +1,7 @@
 package com.example.backend.features.reservations;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import com.example.backend.features.payments.Payment;
@@ -40,10 +40,10 @@ public class Reservation {
   private ReservationStatus status;
 
   @Column(nullable = false, updatable = false)
-  private LocalDateTime createdAt;
+  private Instant createdAt;
 
   @Column(nullable = false)
-  private LocalDateTime reserveUntil;
+  private Instant reserveUntil;
 
   @Column(nullable = false)
   private BigDecimal totalPrice;
