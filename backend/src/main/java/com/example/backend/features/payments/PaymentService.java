@@ -1,6 +1,6 @@
 package com.example.backend.features.payments;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,8 +12,10 @@ import com.example.backend.shared.exceptions.ResourceNotFoundException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
 import com.stripe.model.StripeObject;
 import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.RefundCreateParams;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,6 +35,12 @@ public class PaymentService {
     } catch (StripeException e) {
       throw new PaymentProcessingException("" + e);
     }
+  }
+
+  public PaymentStatus getPaymentStatusByReservationId(Long reservationId) {
+    return paymentRepository.findByReservationId(reservationId)
+        .map(Payment::getStatus)
+        .orElse(null);
   }
 
   public CreatePaymentResponse createPayment(long amount, Reservation reservation) {
@@ -58,7 +66,7 @@ public class PaymentService {
         .amount(amount)
         .currency("mxn")
         .status(PaymentStatus.PENDING)
-        .createdAt(LocalDateTime.now())
+        .createdAt(Instant.now())
         .build();
 
     paymentRepository.save(payment);
@@ -83,7 +91,7 @@ public class PaymentService {
     Payment payment = this.getPaymentByPaymentIntentIdOrThrow(stripePaymentIntentId);
 
     payment.setStatus(status);
-    payment.setUpdatedAt(LocalDateTime.now());
+    payment.setUpdatedAt(Instant.now());
     return payment;
   }
 
@@ -96,5 +104,29 @@ public class PaymentService {
   public Payment getPaymentByPaymentIntentIdOrThrow(String stripePaymentIntentId) {
     return paymentRepository.findByStripePaymentIntentId(stripePaymentIntentId)
         .orElseThrow(() -> new ResourceNotFoundException("payment not found: " + stripePaymentIntentId));
+  }
+
+  @Transactional
+  public Payment refundPaymentIfSucceeded(Long reservationId) {
+    Payment payment = paymentRepository.findByReservationId(reservationId)
+        .orElseThrow(() -> new ResourceNotFoundException("payment for reservation: " + reservationId + " not found"));
+
+    if (payment.getStatus() != PaymentStatus.SUCCEEDED) {
+      return payment;
+    }
+
+    try {
+      RefundCreateParams params = RefundCreateParams.builder()
+          .setPaymentIntent(payment.getStripePaymentIntentId())
+          .build();
+      Refund.create(params);
+    } catch (StripeException e) {
+      throw new PaymentProcessingException("" + e);
+    }
+
+    payment.setStatus(PaymentStatus.REFUNDED);
+    payment.setUpdatedAt(Instant.now());
+    paymentRepository.save(payment);
+    return payment;
   }
 }
