@@ -11,7 +11,19 @@ import { CINEMA_TIME_ZONE, nowInTimeZone } from '../../core/utils/date.utils';
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
     <div class="flex min-h-screen bg-slate-100">
-      <aside class="fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-white">
+      <!-- Backdrop (mobile only) -->
+      @if (sidebarOpen()) {
+        <div
+          class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          (click)="sidebarOpen.set(false)"
+        ></div>
+      }
+
+      <!-- Sidebar -->
+      <aside
+        class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out"
+        [style.transform]="sidebarTransform()"
+      >
         <div class="flex h-16 items-center gap-2.5 border-b border-slate-100 px-6">
           <img
             class="h-10 w-auto shrink-0 object-contain"
@@ -111,7 +123,33 @@ import { CINEMA_TIME_ZONE, nowInTimeZone } from '../../core/utils/date.utils';
         </div>
       </aside>
 
-      <main class="ml-64 flex-1 px-8 py-8">
+      <!-- Mobile header -->
+      <div class="fixed inset-x-0 top-0 z-30 flex h-14 items-center gap-2.5 border-b border-slate-200 bg-white px-4 lg:hidden">
+        <button
+          type="button"
+          class="rounded-lg p-2 text-slate-600 transition hover:bg-slate-100"
+          (click)="sidebarOpen.set(true)"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        </button>
+        <img
+          class="h-8 w-auto shrink-0 object-contain"
+          src="logo_movie_system.png"
+          alt="Cinema logo"
+        />
+        <div class="min-w-0">
+          <span class="bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 bg-clip-text text-lg font-bold tracking-tight text-transparent">
+            Cinema
+          </span>
+          <p class="text-xs font-medium tabular-nums leading-none text-slate-400">
+            {{ cinemaTime() }} CDMX
+          </p>
+        </div>
+      </div>
+
+      <main class="flex-1 px-4 py-8 pt-20 lg:ml-64 lg:px-8">
         <router-outlet />
       </main>
     </div>
@@ -129,12 +167,26 @@ export class LayoutComponent {
   readonly roleLabel = computed(() => (this.isAdmin() ? 'Admin' : 'User'));
 
   readonly cinemaTime = signal('');
+  readonly sidebarOpen = signal(false);
+  readonly isDesktop = signal(true);
+
+  readonly sidebarTransform = computed(() =>
+    this.isDesktop() ? '' : (this.sidebarOpen() ? 'translateX(0)' : 'translateX(-100%)')
+  );
 
   constructor() {
     this.updateCinemaTime();
     interval(1000)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.updateCinemaTime());
+
+    this.router.events
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.sidebarOpen.set(false));
+
+    const mql = window.matchMedia('(min-width: 64rem)');
+    this.isDesktop.set(mql.matches);
+    mql.addEventListener('change', (e) => this.isDesktop.set(e.matches));
   }
 
   private updateCinemaTime(): void {
