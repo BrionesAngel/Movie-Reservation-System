@@ -18,7 +18,7 @@ import { DateNavigatorComponent } from '../../../shared/components/date-navigato
       </header>
 
       <div class="mb-6">
-        <app-date-navigator (dateChange)="onDateChange($event)" />
+        <app-date-navigator [allowBack]="true" (dateChange)="onDateChange($event)" />
       </div>
 
       @if (loading()) {

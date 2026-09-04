@@ -147,14 +147,14 @@ export class AdminShowtimesPage {
     this.saving.set(true);
     this.error.set(null);
 
-    const startTime = new Date(this.form.controls.startTime.value);
+    const startTime = this.form.controls.startTime.value;
 
     try {
       await lastValueFrom(
         this.showtimeService.createShowtime({
           movieId: this.form.controls.movieId.value!,
           roomId: this.form.controls.roomId.value!,
-          startTime: startTime.toISOString(),
+          startTime,
           price: this.form.controls.price.value
         })
       );

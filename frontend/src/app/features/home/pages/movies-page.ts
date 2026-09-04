@@ -4,7 +4,6 @@ import { Movie } from '../../../core/models/movie.model';
 import { Showtime } from '../../../core/models/showtime.model';
 import { MovieService } from '../../../core/services/movie.service';
 import { ShowtimeService } from '../../../core/services/showtime.service';
-import { toDateParam, today } from '../../../core/utils/date.utils';
 import { MovieCardComponent } from '../../../shared/components/movie-card.component';
 
 @Component({
@@ -15,7 +14,7 @@ import { MovieCardComponent } from '../../../shared/components/movie-card.compon
     <div class="mx-auto max-w-6xl">
       <header class="mb-8">
         <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Now Playing</h1>
-        <p class="mt-1 text-slate-500">Movies with showtimes today.</p>
+        <p class="mt-1 text-slate-500">Movies with upcoming showtimes.</p>
       </header>
 
       @if (loading()) {
@@ -58,12 +57,12 @@ export class MoviesPage {
     this.error.set(null);
 
     try {
-      const [movies, todayShowtimes] = await Promise.all([
+      const [movies, upcomingShowtimes] = await Promise.all([
         lastValueFrom(this.movieService.getMovies()),
-        lastValueFrom(this.showtimeService.getShowtimesByDate(toDateParam(today())))
+        lastValueFrom(this.showtimeService.getUpcomingShowtimes())
       ]);
 
-      const activeMovieIds = new Set(todayShowtimes.map((st: Showtime) => st.movie));
+      const activeMovieIds = new Set(upcomingShowtimes.map((st: Showtime) => st.movie));
       this.movies.set(movies.filter((m: Movie) => activeMovieIds.has(m.id)));
     } catch {
       this.error.set('Failed to load movies. Please try again.');

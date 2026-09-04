@@ -25,8 +25,8 @@ import { Movie } from '../../core/models/movie.model';
         <h3 class="truncate font-semibold text-slate-900">{{ movie().title }}</h3>
         <p class="text-xs text-slate-500">{{ movie().duration_minutes }} min</p>
         @if (movie().genres.length) {
-          <div class="mt-2 flex flex-wrap gap-1">
-            @for (genre of movie().genres; track genre.id) {
+          <div class="mt-2 flex h-[44px] flex-wrap content-start gap-1 overflow-hidden">
+            @for (genre of movie().genres.slice(0, 3); track genre.id) {
               <span class="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
                 {{ genre.name }}
               </span>

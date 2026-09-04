@@ -183,7 +183,7 @@ export class SeatSelectionPage {
   }
 
   goToPay(reservation: Reservation): void {
-    void this.router.navigate(['/home/reservations', reservation.id, 'payment']);
+    this.navigateToPayment(reservation);
   }
 
   statusLabel(status: ReservationStatus): string {
@@ -266,11 +266,24 @@ export class SeatSelectionPage {
           seatsId: Array.from(this.selectedSeatIds())
         })
       );
-      await this.router.navigate(['/home/reservations', reservation.id, 'payment']);
+      this.navigateToPayment(reservation);
     } catch {
       this.error.set('Failed to create reservation. The seats may no longer be available.');
     } finally {
       this.reserving.set(false);
     }
+  }
+
+  private navigateToPayment(reservation: Reservation): void {
+    void this.router.navigate(['/home/reservations', reservation.id, 'payment'], {
+      state: {
+        ticket: {
+          movieTitle: this.movie()?.title,
+          moviePosterUrl: this.movie()?.posterUrl,
+          roomNumber: this.room()?.number,
+          startTime: this.showtime()?.startTime
+        }
+      }
+    });
   }
 }

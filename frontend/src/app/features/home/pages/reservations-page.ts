@@ -4,13 +4,12 @@ import { RouterLink } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Movie } from '../../../core/models/movie.model';
-import { Reservation, ReservationStatus } from '../../../core/models/reservation.model';
-import { ShowtimeAndSeats } from '../../../core/models/showtime.model';
+import { Reservation, ReservationStatus } from '../../../core/models/reservation.model';import { ShowtimeAndSeats } from '../../../core/models/showtime.model';
 import { MovieService } from '../../../core/services/movie.service';
 import { ReservationService } from '../../../core/services/reservation.service';
 import { Room, RoomService } from '../../../core/services/room.service';
 import { ShowtimeService } from '../../../core/services/showtime.service';
-import { formatDateTime } from '../../../core/utils/date.utils';
+import { formatDateTime, nowInTimeZone, CINEMA_TIME_ZONE } from '../../../core/utils/date.utils';
 
 interface ReservationView extends Reservation {
   statusLabel: string;
@@ -168,7 +167,13 @@ export class ReservationsPage {
           // keep reservation visible without movie info
         }
 
-        views.push({ ...reservation, movie, room, startTime, ...statusMeta(reservation.status) });
+        views.push({
+          ...reservation,
+          movie,
+          room,
+          startTime,
+          ...statusMeta(reservation.status, reservation.paymentStatus)
+        });
       }
 
       this.reservations.set(views);
@@ -182,7 +187,8 @@ export class ReservationsPage {
   canCancel(reservation: ReservationView): boolean {
     if (reservation.status !== 'RESERVED' && reservation.status !== 'BOOKED') return false;
     if (!reservation.startTime) return false;
-    return new Date(reservation.startTime).getTime() > Date.now();
+    const cinemaNow = nowInTimeZone(CINEMA_TIME_ZONE);
+    return new Date(reservation.startTime).getTime() > cinemaNow.getTime();
   }
 
   async cancel(reservation: ReservationView): Promise<void> {
@@ -206,7 +212,14 @@ export class ReservationsPage {
   }
 }
 
-function statusMeta(status: ReservationStatus): { statusLabel: string; statusClass: string } {
+function statusMeta(
+  status: ReservationStatus,
+  paymentStatus?: Reservation['paymentStatus']
+): { statusLabel: string; statusClass: string } {
+  if (status === 'CANCELED' && paymentStatus === 'REFUNDED') {
+    return { statusLabel: 'Refunded', statusClass: 'bg-sky-100 text-sky-700' };
+  }
+
   switch (status) {
     case 'RESERVED':
       return { statusLabel: 'Reserved', statusClass: 'bg-amber-100 text-amber-700' };
