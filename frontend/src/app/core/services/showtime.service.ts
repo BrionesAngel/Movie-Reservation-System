@@ -17,6 +17,12 @@ export class ShowtimeService {
     });
   }
 
+  getUpcomingShowtimes(): Observable<Showtime[]> {
+    return this.http.get<Showtime[]>(`${this.apiUrl}/api/showtimes/upcoming`, {
+      withCredentials: true
+    });
+  }
+
   getShowtime(showtimeId: number): Observable<ShowtimeAndSeats> {
     return this.http.get<ShowtimeAndSeats>(`${this.apiUrl}/api/showtimes/${showtimeId}`, {
       withCredentials: true
