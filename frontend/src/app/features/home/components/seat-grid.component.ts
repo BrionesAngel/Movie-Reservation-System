@@ -6,34 +6,36 @@ import { ShowtimeSeatSummary } from '../../../core/models/seat.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   template: `
-    <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="w-full overflow-hidden rounded-2xl border border-slate-200 bg-white px-1 py-4 shadow-sm sm:p-6">
       <div class="mb-6 flex justify-center">
-        <div class="flex h-9 w-3/4 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold tracking-[0.35em] text-slate-500 uppercase">
+        <div class="flex h-9 w-full items-center justify-center rounded-full bg-slate-200 text-xs font-semibold tracking-[0.35em] text-slate-500 uppercase sm:w-3/4">
           Screen
         </div>
       </div>
 
       <div class="space-y-2">
         @for (row of rows(); track row) {
-          <div class="flex items-center justify-center gap-1.5">
-            <span class="mr-2 w-4 text-center text-xs font-semibold text-slate-400">{{ row }}</span>
-            @for (seat of seatsByRow(row); track seat.id) {
-              <button
-                class="h-7 w-7 rounded-md text-[10px] font-semibold transition"
-                [class]="seatClass(seat)"
-                type="button"
-                [disabled]="seat.status !== 'AVAILABLE'"
-                (click)="toggleSeat(seat)"
-                [attr.aria-label]="'Seat ' + seat.row + seat.number"
-              >
-                {{ seat.number }}
-              </button>
-            }
+          <div class="mx-auto flex w-fit items-center justify-center gap-1 sm:gap-2">
+            <span class="w-3 shrink-0 text-center text-[10px] font-semibold text-slate-400 sm:w-4 sm:text-xs">{{ row }}</span>
+            <div class="flex items-center justify-center gap-0.5 sm:gap-1.5">
+              @for (seat of seatsByRow(row); track seat.id) {
+                <button
+                  class="aspect-square w-[clamp(16px,4.5vw,32px)] rounded-md text-[9px] font-semibold transition sm:w-8 sm:text-[10px]"
+                  [class]="seatClass(seat)"
+                  type="button"
+                  [disabled]="seat.status !== 'AVAILABLE'"
+                  (click)="toggleSeat(seat)"
+                  [attr.aria-label]="'Seat ' + seat.row + seat.number"
+                >
+                  {{ seat.number }}
+                </button>
+              }
+            </div>
           </div>
         }
       </div>
 
-      <div class="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-600">
+      <div class="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-slate-600 sm:gap-4">
         <span class="flex items-center gap-1.5">
           <span class="h-3.5 w-3.5 rounded bg-slate-200"></span> Available
         </span>

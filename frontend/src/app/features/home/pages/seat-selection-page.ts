@@ -18,7 +18,7 @@ import { SeatGridComponent } from '../components/seat-grid.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SeatGridComponent, CurrencyPipe],
   template: `
-    <div class="mx-auto max-w-4xl">
+    <div class="mx-auto max-w-4xl lg:-mt-20">
       @if (showtime(); as showtime) {
         <header class="mb-6">
           <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ movie()?.title ?? 'Showtime' }}</h1>
@@ -88,24 +88,24 @@ import { SeatGridComponent } from '../components/seat-grid.component';
                 {{ totalPrice() | currency }}
               </p>
             </div>
-<div class="flex items-center justify-end gap-3">
-            <button
-              class="rounded-xl border border-slate-300 px-8 py-3 font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-              type="button"
-              [disabled]="reserving()"
-              (click)="cancelSelection()"
-            >
-              Cancel
-            </button>
-            <button
-              class="rounded-xl bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-8 py-3 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-              type="button"
-              [disabled]="selectedCount() === 0 || reserving()"
-              (click)="reserve()"
-            >
-              {{ reserving() ? 'Reserving...' : 'Reserve seats' }}
-            </button>
-          </div>
+<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                class="w-full rounded-xl border border-slate-300 px-8 py-3 font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                type="button"
+                [disabled]="reserving()"
+                (click)="cancelSelection()"
+              >
+                Cancel
+              </button>
+              <button
+                class="w-full rounded-xl bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-8 py-3 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                type="button"
+                [disabled]="selectedCount() === 0 || reserving()"
+                (click)="reserve()"
+              >
+                {{ reserving() ? 'Reserving...' : 'Reserve seats' }}
+              </button>
+            </div>
           </div>
         }
       }
