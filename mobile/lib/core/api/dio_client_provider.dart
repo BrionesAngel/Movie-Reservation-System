@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/api/auth_interceptor.dart';
+import 'package:mobile/core/api/refresh_interceptor.dart';
 import 'package:mobile/core/storage/secure_storage_service_provider.dart';
 
 final dioClientProvider = Provider<Dio>((ref) {
@@ -17,6 +18,7 @@ final dioClientProvider = Provider<Dio>((ref) {
   );
 
   dio.interceptors.add(AuthInterceptor(dio, storageService));
+  dio.interceptors.add(RefreshInterceptor());
 
   return dio;
 });

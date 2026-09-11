@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:mobile/core/storage/secure_storage_service.dart';
+import 'package:mobile/core/services/secure_storage_service.dart';
 
 class AuthInterceptor extends Interceptor {
   final Dio dio;
