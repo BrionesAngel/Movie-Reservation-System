@@ -1,12 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/core/api/auth_interceptor.dart';
-import 'package:mobile/core/api/refresh_interceptor.dart';
-import 'package:mobile/core/storage/secure_storage_service_provider.dart';
+import 'package:mobile/features/auth/providers/token_service_provider.dart';
 
 final dioClientProvider = Provider<Dio>((ref) {
-  final storageService = ref.read(secureStorageServiceProvider);
-
+  final tokenService = ref.read(tokenServiceProvider);
   final dio = Dio(
     BaseOptions(
       baseUrl: 'http://localhost:8080/api',
@@ -17,8 +15,7 @@ final dioClientProvider = Provider<Dio>((ref) {
     ),
   );
 
-  dio.interceptors.add(AuthInterceptor(dio, storageService));
-  dio.interceptors.add(RefreshInterceptor());
+  dio.interceptors.add(AuthInterceptor(dio, tokenService));
 
   return dio;
 });
