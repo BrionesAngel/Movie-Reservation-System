@@ -1,16 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/auth/auth_state.dart';
+import 'package:mobile/core/auth/auth_state_provider.dart';
+import 'package:mobile/core/screens/splash_screen.dart';
+import 'package:mobile/features/auth/screens/login_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const new({super.key});
+class MyApp extends ConsumerWidget {
+  const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: const MainScreen());
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
+    return MaterialApp(
+      home: authState.when(
+        data: (state) => state == AuthState.authenticated
+            ? const MainScreen()
+            : const LoginScreen(),
+        loading: () => const SplashScreen(),
+        error: (e, st) => const LoginScreen(),
+      ),
+    );
   }
 }
 
