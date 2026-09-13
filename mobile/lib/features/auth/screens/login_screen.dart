@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mobile/core/auth/auth_state_provider.dart';
 import 'package:mobile/features/auth/models/login_request.dart';
 import 'package:mobile/features/auth/providers/auth_service_provider.dart';
@@ -108,6 +109,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Text('Iniciar sesión'),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      context.go('/register');
+                    },
+                    child: const Text('¿No tienes cuenta? Regístrate'),
                   ),
                 ],
               ),

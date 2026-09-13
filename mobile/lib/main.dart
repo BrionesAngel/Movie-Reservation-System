@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile/core/auth/auth_state.dart';
-import 'package:mobile/core/auth/auth_state_provider.dart';
-import 'package:mobile/core/screens/splash_screen.dart';
-import 'package:mobile/features/auth/screens/login_screen.dart';
+import 'package:mobile/core/router/router_provider.dart';
+import 'package:mobile/test_screen.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));
@@ -14,17 +12,9 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authStateProvider);
+    final router = ref.watch(routerProvider);
 
-    return MaterialApp(
-      home: authState.when(
-        data: (state) => state == AuthState.authenticated
-            ? const MainScreen()
-            : const LoginScreen(),
-        loading: () => const SplashScreen(),
-        error: (e, st) => const LoginScreen(),
-      ),
-    );
+    return MaterialApp.router(routerConfig: router);
   }
 }
 
@@ -42,6 +32,7 @@ class _MainScreenState extends State<MainScreen> {
     Text('Movies'),
     Text('Showtimes'),
     Text('My Reservations'),
+    TestScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -76,6 +67,7 @@ class _MainScreenState extends State<MainScreen> {
             icon: Icon(Icons.confirmation_number_rounded),
             label: 'Reservations',
           ),
+          NavigationDestination(icon: Icon(Icons.bug_report), label: 'Test'),
         ],
       ),
     );
