@@ -5,7 +5,7 @@ import 'package:mobile/features/auth/providers/token_service_provider.dart';
 class AuthNotifier extends AsyncNotifier<AuthState> {
   @override
   Future<AuthState> build() async {
-    final token = await ref.read(tokenServiceProvider).getAccessToken();
+    final token = await ref.watch(tokenServiceProvider).getAccessToken();
     return token != null ? AuthState.authenticated : AuthState.unauthenticated;
   }
 
