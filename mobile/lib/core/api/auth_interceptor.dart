@@ -22,7 +22,15 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
+    final path = err.requestOptions.path;
+    final isAuthEndpoint =
+        path.contains('/auth/login') ||
+        path.contains('/auth/register') ||
+        path.contains('/auth/refresh');
+
+    final isRetry = err.requestOptions.extra['isRetry'] == true;
+
+    if (err.response?.statusCode == 401 && !isAuthEndpoint && !isRetry) {
       try {
         _refreshFuture ??= _doRefresh();
         await _refreshFuture;
@@ -30,10 +38,12 @@ class AuthInterceptor extends Interceptor {
         final newToken = await tokenService.getAccessToken();
         final opts = err.requestOptions;
         opts.headers['Authorization'] = 'Bearer $newToken';
+        opts.extra['isRetry'] = true;
 
         final response = await dio.fetch(opts);
         return handler.resolve(response);
       } catch (e) {
+        await tokenService.clearTokens();
         return handler.next(err);
       } finally {
         _refreshFuture = null;

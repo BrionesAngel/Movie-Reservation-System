@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:mobile/features/auth/models/core_models.dart';
+import 'package:mobile/features/auth/models/auth_models.dart';
 import 'package:mobile/features/auth/services/secure_storage_service.dart';
 
 class TokenService {
