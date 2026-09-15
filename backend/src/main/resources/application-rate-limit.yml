@@ -1,0 +1,25 @@
+spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=100000,expireAfterAccess=600s
+
+bucket4j:
+  cache-to-use: caffeine
+  enabled: true
+
+  default-http-status-code: TOO_MANY_REQUESTS
+  default-http-content-type: application/json
+  default-http-response-body: '{"message":"Too many requests"}'
+
+  filters:
+    - id: global-rate-limit
+      cache-name: rate-limit-buckets
+      filter-method: servlet
+      url: /api/.*
+      rate-limits:
+        - cache-key: getRemoteAddr()
+          bandwidths:
+            - capacity: 100
+              time: 1
+              unit: minutes

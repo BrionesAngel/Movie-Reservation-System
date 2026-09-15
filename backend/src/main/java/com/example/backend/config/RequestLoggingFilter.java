@@ -26,5 +26,8 @@ public class RequestLoggingFilter implements Filter {
         request.getRequestURI(),
         response.getStatus(),
         duration);
+
+    log.info("RemoteAddr: {}", request.getRemoteAddr());
+    log.info("X-Forwarded-For: {}", request.getHeader("X-Forwarded-For"));
   }
 }
