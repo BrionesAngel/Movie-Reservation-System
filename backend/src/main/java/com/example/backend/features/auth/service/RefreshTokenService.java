@@ -23,17 +23,15 @@ public class RefreshTokenService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final UserRepository userRepository;
 
-  public String generateAndSaveRefreshToken(Long userId) {
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
+  public String generateAndSaveRefreshToken(User user) {
     String token = generateSecureToken();
     String tokenHash = BCrypt.hashpw(token, BCrypt.gensalt());
 
     RefreshToken refreshToken = RefreshToken.builder()
         .user(user)
         .tokenHash(tokenHash)
-        .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
+        // .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
+        .expiresAt(Instant.now().plus(1, ChronoUnit.MINUTES))
         .isRevoked(false)
         .createdAt(Instant.now())
         .build();
@@ -42,6 +40,7 @@ public class RefreshTokenService {
     return token;
   }
 
+  @Transactional
   public User validateAndGetUser(String tokenValue) {
     RefreshToken refreshToken = refreshTokenRepository.findAll().stream()
         .filter(rt -> !rt.isRevoked())
