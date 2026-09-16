@@ -4,6 +4,3 @@ spring:
 
   config:
     import: classpath:application-rate-limit.yml
-
-server:
-    forward-headers-strategy: framework

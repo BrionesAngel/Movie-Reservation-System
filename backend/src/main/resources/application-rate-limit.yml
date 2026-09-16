@@ -23,3 +23,25 @@ bucket4j:
             - capacity: 100
               time: 1
               unit: minutes
+
+    - id: auth-rate-limit
+      cache-name: rate-limit-buckets
+      filter-method: servlet
+      url: /api/auth/.*
+      rate-limits:
+        - cache-key: getRemoteAddr()
+          bandwidths:
+            - capacity: 10
+              time: 1
+              unit: minutes
+
+    - id: health-rate-limit
+      cache-name: rate-limit-buckets
+      filter-method: servlet
+      url: /api/health
+      rate-limits:
+        - cache-key: getRemoteAddr()
+          bandwidths:
+            - capacity: 15
+              time: 1
+              unit: minutes
