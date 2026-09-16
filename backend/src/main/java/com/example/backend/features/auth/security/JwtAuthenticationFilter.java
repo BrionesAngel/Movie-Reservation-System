@@ -3,11 +3,11 @@ package com.example.backend.features.auth.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.backend.features.users.Role;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +19,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
-  private final UserDetailsService userDetailsService;
 
   @Override
   protected void doFilterInternal(
@@ -36,19 +35,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     try {
       final String token = authHeader.substring("Bearer ".length());
-      final String username = jwtService.extractUsername(token);
 
-      if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+      if (jwtService.isTokenValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+        final String userId = jwtService.extractUserId(token);
+        final String userRole = jwtService.extractUserRole(token);
+        CustomUserPrincipal principal = CustomUserPrincipal.builder()
+            .userId(Long.valueOf(userId))
+            .userRole(Role.valueOf(userRole))
+            .build();
 
-        if (jwtService.isTokenValid(token, userDetails)) {
-          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-              userDetails, null, userDetails.getAuthorities());
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            principal, null, principal.getAuthorities());
 
-          authentication.setDetails(
-              new WebAuthenticationDetailsSource().buildDetails(request));
-          SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
+        SecurityContextHolder.getContext().setAuthentication(authentication);
       }
     } catch (Exception e) {
       logger.error("JWT authentication failed: " + e.getMessage());

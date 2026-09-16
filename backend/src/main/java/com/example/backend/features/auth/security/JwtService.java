@@ -1,12 +1,14 @@
 package com.example.backend.features.auth.security;
 
 import org.springframework.stereotype.Service;
+
+import com.example.backend.features.users.Role;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
@@ -21,28 +23,25 @@ public class JwtService {
     return Keys.hmacShaKeyFor(keyBytes);
   }
 
-  public String generateAccessToken(String subject) {
-    long jwtExpirationMs = 1000 * 60 * 15;
+  public String generateAccessToken(Long userId, Role userRole) {
+    // long jwtExpirationMs = 1000 * 60 * 15;
+    long jwtExpirationMs = 1000 * 15;
 
     return Jwts.builder()
-        .subject(subject)
+        .subject(userId.toString())
+        .claim("role", userRole)
         .issuedAt(new Date())
         .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
         .signWith(getSigningKey())
         .compact();
   }
 
-  public String extractUsername(String token) {
+  public String extractUserId(String token) {
     return extractAllClaims(token).getSubject();
   }
 
-  public boolean isTokenValid(String token, UserDetails user) {
-    try {
-      final String username = extractUsername(token);
-      return username.equals(user.getUsername()) && !isTokenExpired(token);
-    } catch (Exception e) {
-      return false;
-    }
+  public boolean isTokenValid(String token) {
+    return !isTokenExpired(token);
   }
 
   private boolean isTokenExpired(String token) {
@@ -59,5 +58,9 @@ public class JwtService {
         .build()
         .parseSignedClaims(token)
         .getPayload();
+  }
+
+  public String extractUserRole(String token) {
+    return extractAllClaims(token).get("role", String.class);
   }
 }
