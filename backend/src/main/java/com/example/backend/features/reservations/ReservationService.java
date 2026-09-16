@@ -24,6 +24,7 @@ import com.example.backend.features.showtimes.Showtime;
 import com.example.backend.features.showtimes.ShowtimeRepository;
 import com.example.backend.shared.constants.CinemaTime;
 import com.example.backend.features.users.User;
+import com.example.backend.features.users.UserRepository;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class ReservationService {
   private final ShowtimeSeatRepository showtimeSeatRepository;
   private final ShowtimeSeatService showtimeSeatService;
   private final PaymentService paymentService;
+  private final UserRepository userRepository;
 
   @Transactional
   public void cancelReservation(Long userId, Long reservationId) {
@@ -86,13 +88,15 @@ public class ReservationService {
     return reservation;
   }
 
-  public List<ReservationSummaryResponse> getMyReservations(User user) {
-    return reservationRepository.findAllByUserIdWithSeats(user.getId())
+  @Transactional
+  public List<ReservationSummaryResponse> getMyReservations(Long userId) {
+    return reservationRepository.findAllByUserIdWithSeats(userId)
         .stream()
         .map(r -> this.toReservationSummaryResponse(r, r.getSeats()))
         .toList();
   }
 
+  @Transactional
   public ReservationResponse getReservationPaymentDetails(Long userId, Long reservationId) {
     Reservation reservation = reservationRepository.getReservationWithSeatsByIdAndUserId(reservationId, userId)
         .orElseThrow(
@@ -103,6 +107,7 @@ public class ReservationService {
     return this.toReservationResponse(reservation, clientSecret, reservation.getSeats());
   }
 
+  @Transactional
   public List<ReservationSummaryResponse> getAllReservationsByDate(LocalDate date) {
     Instant startOfDay = date.atStartOfDay(CinemaTime.ZONE).toInstant();
     Instant endOfDay = date.plusDays(1).atStartOfDay(CinemaTime.ZONE).toInstant();
@@ -113,7 +118,10 @@ public class ReservationService {
   }
 
   @Transactional
-  public ReservationResponse createReservation(User user, ReservationRequest request) {
+  public ReservationResponse createReservation(Long userId, ReservationRequest request) {
+    User user = userRepository.findById(userId)
+      .orElseThrow(() -> new ResourceNotFoundException("user: " + userId + "not found"));
+
     Showtime showtime = showtimeRepository.findById(request.showtimeId())
         .orElseThrow(() -> new ResourceNotFoundException("showtime: " + request.showtimeId() + " not found"));
 

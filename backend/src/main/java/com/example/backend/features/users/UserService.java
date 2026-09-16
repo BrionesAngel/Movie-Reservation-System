@@ -34,11 +34,11 @@ public class UserService {
   }
 
   @Transactional
-  public void promoteUser(Long userId){
+  public void promoteUser(Long userId) {
     User user = userRepository.findById(userId)
-      .orElseThrow(() -> new ResourceNotFoundException("User: " + userId + " not Found"));
+        .orElseThrow(() -> new ResourceNotFoundException("User: " + userId + " not Found"));
 
-    if(user.getRole()==Role.ADMIN){
+    if (user.getRole() == Role.ADMIN) {
       throw new UserAlreadyAdminException("User: " + user.getId() + "is already an Administrator");
     }
 
@@ -66,7 +66,10 @@ public class UserService {
     return userRepository.save(user);
   }
 
-  public UserProfileResponse getMyProfile(User user) {
+  public UserProfileResponse getMyProfile(Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException("User: " + userId + " not Found"));
+
     return new UserProfileResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
   }
 

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import com.example.backend.features.auth.security.CustomUserDetails;
+import com.example.backend.features.auth.security.CustomUserPrincipal;
 import com.example.backend.features.users.DTOs.ChangePasswordRequest;
 import com.example.backend.features.users.DTOs.UserProfileResponse;
 import com.example.backend.features.users.DTOs.UserResponse;
@@ -34,8 +35,8 @@ public class UserController {
   }
 
   @GetMapping("/me")
-  public UserProfileResponse getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-    return userService.getMyProfile(userDetails.getUser());
+  public UserProfileResponse getMyProfile(@AuthenticationPrincipal CustomUserPrincipal customUserPrincipal) {
+    return userService.getMyProfile(customUserPrincipal.getUserId());
   }
 
   @PatchMapping("/profile/username")

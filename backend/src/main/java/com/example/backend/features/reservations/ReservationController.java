@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.backend.features.auth.security.CustomUserDetails;
+import com.example.backend.features.auth.security.CustomUserPrincipal;
 import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
 import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
@@ -34,31 +34,31 @@ public class ReservationController {
   @PostMapping("/create")
   @ResponseStatus(HttpStatus.OK)
   public ReservationResponse createReservation(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
       @Valid @RequestBody ReservationRequest request) {
-    return reservationService.createReservation(userDetails.getUser(), request);
+    return reservationService.createReservation(customUserPrincipal.getUserId(), request);
   }
 
   @GetMapping("/{reservationId}/payment")
   @ResponseStatus(HttpStatus.OK)
   public ReservationResponse getReservationPayment(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
       @PathVariable Long reservationId) {
-    return reservationService.getReservationPaymentDetails(userDetails.getId(), reservationId);
+    return reservationService.getReservationPaymentDetails(customUserPrincipal.getUserId(), reservationId);
   }
 
   @PatchMapping("/{reservationId}/cancel")
   public void cancelReservation(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
       @PathVariable Long reservationId) {
-    reservationService.cancelReservation(userDetails.getId(), reservationId);
+    reservationService.cancelReservation(customUserPrincipal.getUserId(), reservationId);
   }
 
   @GetMapping("/mine")
   @ResponseStatus(HttpStatus.OK)
   public List<ReservationSummaryResponse> getMyReservations(
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
-    return reservationService.getMyReservations(userDetails.getUser());
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal) {
+    return reservationService.getMyReservations(customUserPrincipal.getUserId());
   }
 
   @PreAuthorize("hasRole('ADMIN')")
