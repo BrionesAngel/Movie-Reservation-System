@@ -120,7 +120,7 @@ export class AuthService {
       { withCredentials: true }
     ).pipe(
       tap((response) => {
-        this.saveTokens(response.accessToken, response.refreshToken);
+        this.saveTokens(response.accessToken);
       }),
       catchError((err) => {
         this.error.set('Your session expired. Please sign in again.');
@@ -148,9 +148,11 @@ export class AuthService {
     return this.refreshToken() ?? localStorage.getItem('refreshToken');
   }
 
-  saveTokens(accessToken: string, refreshToken?: string | null): void {
-    this.accessToken.set(accessToken);
-    localStorage.setItem('accessToken', accessToken);
+  saveTokens(accessToken?: string | null, refreshToken?: string | null): void {
+    if (accessToken) {
+      this.accessToken.set(accessToken);
+      localStorage.setItem('accessToken', accessToken);
+    }
 
     if (refreshToken) {
       this.refreshToken.set(refreshToken);

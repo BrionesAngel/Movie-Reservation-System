@@ -5,6 +5,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, finalize, shareReplay, switchMap } from 'rxjs/operators';
 import { RefreshTokenResponse } from '../models/auth.models';
 import { AuthService } from '../services/auth.service';
+import { UiFeedbackService } from '../services/ui-feedback.service';
 
 
 let refreshRequest$: Observable<RefreshTokenResponse> | null = null;
@@ -15,16 +16,22 @@ function isAuthEndpoint(url: string): boolean {
   return AUTH_ENDPOINTS.some((endpoint) => url.includes(endpoint));
 }
 
-function signOutLocally(authService: AuthService, router: Router): void {
+function signOutLocally(
+  authService: AuthService,
+  router: Router,
+  uiFeedback: UiFeedbackService
+): void {
   authService.clearTokens();
   authService.currentUser.set(null);
   authService.error.set(null);
+  void uiFeedback.sessionExpired();
   void router.navigateByUrl('/login');
 }
 
 export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const uiFeedback = inject(UiFeedbackService);
 
   return next(req).pipe(
     catchError((error: unknown) => {
@@ -33,10 +40,6 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
       }
 
       if (isAuthEndpoint(req.url)) {
-        return throwError(() => error);
-      }
-
-      if (req.url.includes('/api/auth/login') || req.url.includes('/api/auth/register')) {
         return throwError(() => error);
       }
 
@@ -60,7 +63,7 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
           return next(retriedRequest);
         }),
         catchError((refreshError) => {
-          signOutLocally(authService, router);
+          signOutLocally(authService, router, uiFeedback);
           return throwError(() => refreshError);
         })
       );

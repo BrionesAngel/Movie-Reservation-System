@@ -26,4 +26,17 @@ export class UiFeedbackService {
 
     return result.isConfirmed;
   }
+
+  async sessionExpired() {
+    if (Swal.isVisible()) {
+      return;
+    }
+
+    await Swal.fire({
+      title: 'Session expired',
+      text: 'Your session has expired. Please sign in again.',
+      icon: 'info',
+      confirmButtonText: 'OK',
+    });
+  }
 }
