@@ -1,14 +1,13 @@
 package com.example.backend.features.auth.controller;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.example.backend.features.auth.dto.AuthResponse;
 import com.example.backend.features.auth.dto.RegisterRequest;
-import com.example.backend.features.auth.security.CustomUserDetails;
 import com.example.backend.features.auth.dto.LoginRequest;
 import com.example.backend.features.auth.dto.LogoutRequest;
 import com.example.backend.features.auth.dto.RefreshTokenRequest;
+import com.example.backend.features.auth.dto.RefreshTokenResponse;
 import com.example.backend.features.auth.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -37,13 +36,13 @@ public class AuthController {
   }
 
   @PostMapping("/refresh")
-  public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+  public RefreshTokenResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
     return authService.refresh(request);
   }
 
   @PostMapping("/logout")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void logout(@Valid @RequestBody LogoutRequest request, @AuthenticationPrincipal CustomUserDetails userDetails){
-    authService.logout(userDetails.getUsername(), request.refreshToken());
+  public void logout(@Valid @RequestBody LogoutRequest request) {
+    authService.logout(request.refreshToken());
   }
 }

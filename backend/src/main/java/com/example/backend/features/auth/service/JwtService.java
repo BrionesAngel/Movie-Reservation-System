@@ -1,4 +1,4 @@
-package com.example.backend.features.auth.security;
+package com.example.backend.features.auth.service;
 
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class JwtService {
 
   public String generateAccessToken(Long userId, Role userRole) {
     // long jwtExpirationMs = 1000 * 60 * 15;
-    long jwtExpirationMs = 1000 * 15;
+    long jwtExpirationMs = 1000 * 10;
 
     return Jwts.builder()
         .subject(userId.toString())
@@ -36,31 +36,19 @@ public class JwtService {
         .compact();
   }
 
-  public String extractUserId(String token) {
-    return extractAllClaims(token).getSubject();
+  public String extractUserId(Claims claims) {
+    return claims.getSubject();
   }
 
-  public boolean isTokenValid(String token) {
-    return !isTokenExpired(token);
+  public String extractUserRole(Claims claims) {
+    return claims.get("role", String.class);
   }
 
-  private boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
-  }
-
-  private Date extractExpiration(String token) {
-    return extractAllClaims(token).getExpiration();
-  }
-
-  private Claims extractAllClaims(String token) {
+  public Claims extractAllClaims(String token) {
     return Jwts.parser()
         .verifyWith(getSigningKey())
         .build()
         .parseSignedClaims(token)
         .getPayload();
-  }
-
-  public String extractUserRole(String token) {
-    return extractAllClaims(token).get("role", String.class);
   }
 }

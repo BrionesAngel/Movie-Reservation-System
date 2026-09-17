@@ -49,13 +49,14 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/login",
                 "/api/auth/register",
                 "/api/auth/refresh",
+                "/api/auth/logout",
                 "/api/health",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
                 "/swagger-ui.html",
                 "/api/webhooks/**")
             .permitAll()
-            .requestMatchers("/api/auth/logout", "/api/test").authenticated()
+            .requestMatchers("/api/test").authenticated()
             .anyRequest().authenticated())
         .exceptionHandling(exh -> exh
             .authenticationEntryPoint(

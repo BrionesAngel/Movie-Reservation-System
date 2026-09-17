@@ -1,10 +1,8 @@
 package com.example.backend.features.auth.exceptions;
 
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import javax.security.sasl.AuthenticationException;
+import org.springframework.security.core.AuthenticationException;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.security.SignatureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -50,15 +48,4 @@ public class AuthExceptionHandler extends BaseExceptionHandler {
     return buildError(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN");
   }
 
-  @ExceptionHandler(ExpiredJwtException.class)
-  public ResponseEntity<ErrorResponse> handleExpiredJwt(ExpiredJwtException ex) {
-    log.warn("JWT expired: {}", ex.getMessage());
-    return buildError(HttpStatus.UNAUTHORIZED, "TOKEN_EXPIRED");
-  }
-
-  @ExceptionHandler(SignatureException.class)
-  public ResponseEntity<ErrorResponse> handleSignatureException(SignatureException ex) {
-    log.warn("Invalid token signature: {}", ex.getMessage());
-    return buildError(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN");
-  }
 }

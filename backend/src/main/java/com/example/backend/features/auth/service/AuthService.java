@@ -4,11 +4,11 @@ import lombok.RequiredArgsConstructor;
 import com.example.backend.features.users.User;
 import com.example.backend.features.users.UserService;
 import com.example.backend.features.auth.security.CustomUserDetails;
-import com.example.backend.features.auth.security.JwtService;
 import com.example.backend.features.auth.dto.AuthResponse;
 import com.example.backend.features.auth.dto.RegisterRequest;
 import com.example.backend.features.auth.dto.LoginRequest;
 import com.example.backend.features.auth.dto.RefreshTokenRequest;
+import com.example.backend.features.auth.dto.RefreshTokenResponse;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,14 +49,14 @@ public class AuthService {
     return new AuthResponse(accessToken, refreshToken);
   }
 
-  public void logout(String username, String refreshToken) {
-    refreshTokenService.revokeToken(username, refreshToken);
+  public void logout(String refreshToken) {
+    refreshTokenService.revokeToken(refreshToken);
   }
 
-  public AuthResponse refresh(RefreshTokenRequest request) {
+  public RefreshTokenResponse refresh(RefreshTokenRequest request) {
     User user = refreshTokenService.validateAndGetUser(request.refreshToken());
     String newAccessToken = jwtService.generateAccessToken(user.getId(), user.getRole());
 
-    return new AuthResponse(newAccessToken, request.refreshToken());
+    return new RefreshTokenResponse(newAccessToken);
   }
 }

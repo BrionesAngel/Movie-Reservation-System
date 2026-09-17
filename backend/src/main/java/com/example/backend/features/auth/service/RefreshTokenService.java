@@ -9,8 +9,6 @@ import com.example.backend.features.auth.exceptions.InvalidRefreshTokenException
 import com.example.backend.features.auth.security.RefreshToken;
 import com.example.backend.features.auth.security.RefreshTokenRepository;
 import com.example.backend.features.users.User;
-import com.example.backend.features.users.UserRepository;
-import com.example.backend.shared.exceptions.ResourceNotFoundException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.security.SecureRandom;
@@ -21,7 +19,6 @@ import java.util.Base64;
 public class RefreshTokenService {
 
   private final RefreshTokenRepository refreshTokenRepository;
-  private final UserRepository userRepository;
 
   public String generateAndSaveRefreshToken(User user) {
     String token = generateSecureToken();
@@ -64,13 +61,12 @@ public class RefreshTokenService {
   }
 
   @Transactional
-  public void revokeToken(String username, String refreshTokenValue) {
-    User user = userRepository.findByEmail(username)
-        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
+  public void revokeToken(String refreshTokenValue) {
     RefreshToken refreshToken = refreshTokenRepository
-        .findActiveTokensByUser(user, Instant.now())
+        .findAll()
         .stream()
+        .filter(rt -> !rt.isRevoked())
+        .filter(rt -> rt.getExpiresAt().isAfter(Instant.now()))
         .filter(rt -> BCrypt.checkpw(refreshTokenValue, rt.getTokenHash()))
         .findFirst()
         .orElseThrow(() -> new InvalidRefreshTokenException("Invalid refresh token"));
