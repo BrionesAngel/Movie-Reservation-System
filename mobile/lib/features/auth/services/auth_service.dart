@@ -27,12 +27,4 @@ class AuthService {
     );
     return authResponse;
   }
-
-  Future<void> logout(String refreshToken) async {
-    try {
-      await dio.post('/auth/logout', data: {'refreshToken': refreshToken});
-    } finally {
-      await tokenService.clearTokens();
-    }
-  }
 }

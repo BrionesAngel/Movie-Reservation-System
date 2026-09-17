@@ -1,11 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/auth/auth_state_provider.dart';
 import 'package:mobile/features/auth/services/token_service.dart';
 
 class AuthInterceptor extends Interceptor {
   final Dio dio;
   final TokenService tokenService;
+  final Ref ref;
 
-  AuthInterceptor(this.dio, this.tokenService);
+  AuthInterceptor(this.dio, this.tokenService, this.ref);
 
   Future<void>? _refreshFuture;
 
@@ -26,6 +29,7 @@ class AuthInterceptor extends Interceptor {
     final isAuthEndpoint =
         path.contains('/auth/login') ||
         path.contains('/auth/register') ||
+        path.contains('/auth/refresh') ||
         path.contains('/auth/refresh');
 
     final isRetry = err.requestOptions.extra['isRetry'] == true;
@@ -44,6 +48,7 @@ class AuthInterceptor extends Interceptor {
         return handler.resolve(response);
       } catch (e) {
         await tokenService.clearTokens();
+        ref.read(authStateProvider.notifier).setUnauthenticated();
         return handler.next(err);
       } finally {
         _refreshFuture = null;

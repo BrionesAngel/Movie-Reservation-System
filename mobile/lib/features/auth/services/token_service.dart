@@ -11,13 +11,28 @@ class TokenService {
   Future<String?> getAccessToken() => secureStorageService.getAccessToken();
   Future<String?> getRefreshToken() => secureStorageService.getRefreshToken();
 
+  Future<void> logout(String refreshToken) async {
+    try {
+      await refreshDio.post(
+        '/auth/logout',
+        data: {'refreshToken': refreshToken},
+      );
+    } finally {
+      await clearTokens();
+    }
+  }
+
   Future<void> refresh(String refreshToken) async {
     final response = await refreshDio.post(
       '/auth/refresh',
       data: {'refreshToken': refreshToken},
     );
-    final authResponse = AuthResponse.fromJson(response.data);
-    await saveTokens(authResponse.accessToken, authResponse.refreshToken);
+    final authResponse = RefreshResponse.fromJson(response.data);
+    await saveAccessToken(authResponse.accessToken);
+  }
+
+  Future<void> saveAccessToken(String access) async {
+    await secureStorageService.saveAccessToken(access);
   }
 
   Future<void> saveTokens(String access, String refresh) async {

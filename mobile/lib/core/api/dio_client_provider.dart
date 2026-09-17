@@ -15,7 +15,7 @@ final dioClientProvider = Provider<Dio>((ref) {
     ),
   );
 
-  dio.interceptors.add(AuthInterceptor(dio, tokenService));
+  dio.interceptors.add(AuthInterceptor(dio, tokenService, ref));
 
   return dio;
 });
