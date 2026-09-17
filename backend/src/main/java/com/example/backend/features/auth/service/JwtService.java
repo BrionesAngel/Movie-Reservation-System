@@ -24,8 +24,7 @@ public class JwtService {
   }
 
   public String generateAccessToken(Long userId, Role userRole) {
-    // long jwtExpirationMs = 1000 * 60 * 15;
-    long jwtExpirationMs = 1000 * 10;
+    long jwtExpirationMs = 1000 * 60 * 15;
 
     return Jwts.builder()
         .subject(userId.toString())

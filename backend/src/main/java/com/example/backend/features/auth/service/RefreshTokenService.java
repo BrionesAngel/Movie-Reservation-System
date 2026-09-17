@@ -27,8 +27,7 @@ public class RefreshTokenService {
     RefreshToken refreshToken = RefreshToken.builder()
         .user(user)
         .tokenHash(tokenHash)
-        // .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
-        .expiresAt(Instant.now().plus(1, ChronoUnit.MINUTES))
+        .expiresAt(Instant.now().plus(7, ChronoUnit.DAYS))
         .isRevoked(false)
         .createdAt(Instant.now())
         .build();
