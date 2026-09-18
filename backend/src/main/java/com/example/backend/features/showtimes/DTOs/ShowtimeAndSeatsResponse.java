@@ -8,8 +8,8 @@ import com.example.backend.features.showtime_seats.DTOs.ShowtimeSeatSummary;
 
 public record ShowtimeAndSeatsResponse(
     Long id,
-    Long movie,
-    Long room,
+    ShowtimeMovieResponse movie,
+    Short roomNumber,
     LocalDateTime startTime,
     LocalDateTime endTime,
     BigDecimal price,

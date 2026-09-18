@@ -40,6 +40,12 @@ public class ShowtimeController {
     return showtimeService.getShowtimesByDate(date);
   }
 
+  @GetMapping("/movie/{movieId}")
+  @ResponseStatus(HttpStatus.OK)
+  public List<ShowtimeResponse> getShowtimesByMovie(@PathVariable Long movieId, @RequestParam LocalDate date) {
+    return showtimeService.getShowtimesByMovieAndDate(movieId, date);
+  }
+
   @GetMapping("/upcoming")
   @ResponseStatus(HttpStatus.OK)
   public List<ShowtimeResponse> getUpcomingShowtimes() {

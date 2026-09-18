@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 
 public record ShowtimeResponse(
   Long id,
-  Long movie,
-  Long room,
+  ShowtimeMovieResponse movie,
+  Short roomNumber,
   LocalDateTime startTime,
   LocalDateTime endTime,
   BigDecimal price

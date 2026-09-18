@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +23,7 @@ import com.example.backend.features.showtime_seats.ShowtimeSeatService;
 import com.example.backend.features.showtime_seats.DTOs.ShowtimeSeatSummary;
 import com.example.backend.features.showtimes.DTOs.CreateShowtimeRequest;
 import com.example.backend.features.showtimes.DTOs.ShowtimeAndSeatsResponse;
+import com.example.backend.features.showtimes.DTOs.ShowtimeMovieResponse;
 import com.example.backend.features.showtimes.DTOs.ShowtimeResponse;
 import com.example.backend.features.showtimes.exceptions.ShowtimeConflictException;
 import com.example.backend.features.showtimes.exceptions.ShowtimeInPastException;
@@ -41,6 +45,7 @@ public class ShowtimeService {
   private final ShowtimeSeatService showtimeSeatService;
 
   @Transactional(readOnly = true)
+  @Cacheable(value = "showtime", key = "#showtimeId")
   public ShowtimeAndSeatsResponse getShowtimeAndShowtimeSeats(Long showtimeId) {
     Showtime showtime = showtimeRepository.findById(showtimeId)
         .orElseThrow(() -> new ResourceNotFoundException("showtime " + showtimeId + " not found"));
@@ -55,6 +60,7 @@ public class ShowtimeService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable("showtimes-by-date")
   public List<ShowtimeResponse> getShowtimesByDate(LocalDate date) {
     ZonedDateTime now = ZonedDateTime.now(CinemaTime.ZONE);
 
@@ -72,6 +78,25 @@ public class ShowtimeService {
   }
 
   @Transactional(readOnly = true)
+  @Cacheable("showtimes-by-movie")
+  public List<ShowtimeResponse> getShowtimesByMovieAndDate(Long movieId, LocalDate date) {
+    ZonedDateTime now = ZonedDateTime.now(CinemaTime.ZONE);
+
+    Instant rangeStart = date.equals(now.toLocalDate())
+        ? now.toInstant()
+        : date.atStartOfDay(CinemaTime.ZONE).toInstant();
+
+    Instant rangeEnd = date.plusDays(1).atStartOfDay(CinemaTime.ZONE).toInstant();
+
+    return showtimeRepository
+        .findByMovieIdAndStartTimeBetween(movieId, rangeStart, rangeEnd)
+        .stream()
+        .map(this::toShowtimeResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  @Cacheable("upcoming-showtimes")
   public List<ShowtimeResponse> getUpcomingShowtimes() {
     return showtimeRepository.findByStartTimeAfterOrderByStartTimeAsc(Instant.now())
         .stream()
@@ -80,6 +105,12 @@ public class ShowtimeService {
   }
 
   @Transactional
+  @Caching(evict = {
+      @CacheEvict(value = "showtimes-by-date", allEntries = true),
+      @CacheEvict(value = "showtimes-by-movie", allEntries = true),
+      @CacheEvict(value = "upcoming-showtimes", allEntries = true),
+      @CacheEvict(value = "upcoming-movies", allEntries = true)
+  })
   public ShowtimeResponse createShowtime(CreateShowtimeRequest request) {
     Movie movie = movieRepository.findById(request.movieId())
         .orElseThrow(() -> new ResourceNotFoundException("Movie " + request.movieId() + " not found"));
@@ -117,8 +148,8 @@ public class ShowtimeService {
   public ShowtimeResponse toShowtimeResponse(Showtime showtime) {
     return new ShowtimeResponse(
         showtime.getId(),
-        showtime.getMovie().getId(),
-        showtime.getRoom().getId(),
+        ShowtimeMovieResponse.from(showtime.getMovie()),
+        showtime.getRoom().getNumber(),
         toLocalDateTime(showtime.getStartTime()),
         toLocalDateTime(showtime.getEndTime()),
         showtime.getPrice());
@@ -127,8 +158,8 @@ public class ShowtimeService {
   public ShowtimeAndSeatsResponse toShowtimeAndSeatsResponse(Showtime showtime, List<ShowtimeSeat> seats) {
     return new ShowtimeAndSeatsResponse(
         showtime.getId(),
-        showtime.getMovie().getId(),
-        showtime.getRoom().getId(),
+        ShowtimeMovieResponse.from(showtime.getMovie()),
+        showtime.getRoom().getNumber(),
         toLocalDateTime(showtime.getStartTime()),
         toLocalDateTime(showtime.getEndTime()),
         showtime.getPrice(),
