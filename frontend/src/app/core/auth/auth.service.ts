@@ -12,7 +12,7 @@ import {
   RegisterRequest,
   User,
   UserProfile
-} from '../models/auth.models';
+} from './auth.models';
 
 @Service()
 export class AuthService {

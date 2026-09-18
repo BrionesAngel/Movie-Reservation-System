@@ -16,27 +16,16 @@ export const HOME_ROUTES: Routes = [
       },
       {
         path: 'movies',
-        loadComponent: () => import('./pages/movies-page').then((m) => m.MoviesPage)
-      },
-      {
-        path: 'movies/:movieId',
-        loadComponent: () => import('./pages/movie-detail-page').then((m) => m.MovieDetailPage)
+        loadChildren: () => import('../movies/movies.routes').then((m) => m.MOVIES_ROUTES)
       },
       {
         path: 'showtimes',
-        loadComponent: () => import('./pages/showtimes-page').then((m) => m.ShowtimesPage)
-      },
-      {
-        path: 'showtimes/:showtimeId',
-        loadComponent: () => import('./pages/seat-selection-page').then((m) => m.SeatSelectionPage)
+        loadChildren: () => import('../showtimes/showtimes.routes').then((m) => m.SHOWTIMES_ROUTES)
       },
       {
         path: 'reservations',
-        loadComponent: () => import('./pages/reservations-page').then((m) => m.ReservationsPage)
-      },
-      {
-        path: 'reservations/:reservationId/payment',
-        loadComponent: () => import('./pages/payment-page').then((m) => m.PaymentPage)
+        loadChildren: () =>
+          import('../reservations/reservations.routes').then((m) => m.RESERVATIONS_ROUTES)
       }
     ]
   }
