@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router, UrlTree } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../auth/auth.service';
 
 export const adminGuard: CanActivateFn = async (_route, state): Promise<boolean | UrlTree> => {
   const authService = inject(AuthService);

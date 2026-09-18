@@ -3,8 +3,8 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { catchError, finalize, shareReplay, switchMap } from 'rxjs/operators';
-import { RefreshTokenResponse } from '../models/auth.models';
-import { AuthService } from '../services/auth.service';
+import { RefreshTokenResponse } from '../auth/auth.models';
+import { AuthService } from '../auth/auth.service';
 import { UiFeedbackService } from '../services/ui-feedback.service';
 
 
