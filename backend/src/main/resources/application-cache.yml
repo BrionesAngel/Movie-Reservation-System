@@ -1,0 +1,28 @@
+app:
+  cache:
+    movies:
+      spec: maximumSize=100,expireAfterWrite=30m
+
+    upcoming-movies:
+      spec: maximumSize=100,expireAfterWrite=5m
+
+    movie-options:
+      spec: maximumSize=100,expireAfterWrite=30m
+
+    movie:
+      spec: maximumSize=100,expireAfterWrite=30m
+
+    showtime:
+      spec: maximumSize=100,expireAfterWrite=30m
+
+    showtimes-by-date:
+      spec: maximumSize=100,expireAfterWrite=5m
+
+    showtimes-by-movie:
+      spec: maximumSize=100,expireAfterWrite=5m
+
+    upcoming-showtimes:
+      spec: maximumSize=100,expireAfterWrite=5m
+
+    rate-limit-buckets:
+      spec: maximumSize=100000,expireAfterAccess=600s

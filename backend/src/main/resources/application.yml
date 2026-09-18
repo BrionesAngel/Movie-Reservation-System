@@ -3,4 +3,7 @@ spring:
     active: dev
 
   config:
-    import: classpath:application-rate-limit.yml
+    import:
+      - classpath:application-rate-limit.yml
+      - classpath:application-cache.yml
+

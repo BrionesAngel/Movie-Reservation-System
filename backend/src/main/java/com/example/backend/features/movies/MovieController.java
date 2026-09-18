@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.backend.features.movies.DTOs.MovieOptionResponse;
 import com.example.backend.features.movies.DTOs.MovieRequest;
 import com.example.backend.features.movies.DTOs.MovieResponse;
 
@@ -37,6 +38,18 @@ public class MovieController {
   @ResponseStatus(HttpStatus.OK)
   public MovieResponse getMovie(@PathVariable Long id) {
     return movieService.getMovie(id);
+  }
+
+  @GetMapping("/options")
+  @ResponseStatus(HttpStatus.OK)
+  public List<MovieOptionResponse> getMovieOptions() {
+    return movieService.getMovieOptions();
+  }
+
+  @GetMapping("/upcoming")
+  @ResponseStatus(HttpStatus.OK)
+  public List<MovieResponse> getUpcomingMovies() {
+    return movieService.getUpcomingMovies();
   }
 
   @PreAuthorize("hasRole('ADMIN')")

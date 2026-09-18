@@ -1,14 +1,19 @@
 package com.example.backend.features.movies;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.backend.features.genres.Genre;
 import com.example.backend.features.genres.GenreRepository;
+import com.example.backend.features.movies.DTOs.MovieOptionResponse;
 import com.example.backend.features.movies.DTOs.MovieRequest;
 import com.example.backend.features.movies.DTOs.MovieResponse;
 import com.example.backend.features.movies.exceptions.MovieHasShowtimesException;
@@ -25,19 +30,44 @@ public class MovieService {
   private final GenreRepository genreRepository;
   private final ShowtimeRepository showtimeRepository;
 
+  @Cacheable("movies")
   public List<MovieResponse> getMovies() {
-    return movieRepository.findAll().stream()
+    return movieRepository.findAllWithGenres().stream()
         .map(this::toMovieResponse)
         .toList();
   }
 
+  @Cacheable(value = "movie", key = "#id")
   public MovieResponse getMovie(Long id) {
-    Movie movie = movieRepository.findById(id)
+    Movie movie = movieRepository.findAllWithGenresByIdIn(List.of(id)).stream()
+        .findFirst()
         .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
     return this.toMovieResponse(movie);
   }
 
+  @Cacheable("upcoming-movies")
+  public List<MovieResponse> getUpcomingMovies() {
+    List<Long> upcomingMovieIds = showtimeRepository.findDistinctMovieIdsByStartTimeAfter(Instant.now());
+    if (upcomingMovieIds.isEmpty()) {
+      return List.of();
+    }
+
+    return movieRepository.findAllWithGenresByIdIn(upcomingMovieIds).stream()
+        .map(this::toMovieResponse)
+        .toList();
+  }
+
+  @Cacheable("movie-options")
+  public List<MovieOptionResponse> getMovieOptions() {
+    return movieRepository.findAllMovieOptions();
+  }
+
   @Transactional
+  @Caching(evict = {
+      @CacheEvict(value = "movies", allEntries = true),
+      @CacheEvict(value = "upcoming-movies", allEntries = true),
+      @CacheEvict(value = "movie-options", allEntries = true)
+  })
   public MovieResponse addMovie(MovieRequest request) {
     Set<Genre> genres = this.getGenres(request.genres());
 
@@ -55,6 +85,12 @@ public class MovieService {
   }
 
   @Transactional
+  @Caching(evict = {
+      @CacheEvict(value = "movies", allEntries = true),
+      @CacheEvict(value = "upcoming-movies", allEntries = true),
+      @CacheEvict(value = "movie-options", allEntries = true),
+      @CacheEvict(value = "movie", key = "#id")
+  })
   public MovieResponse updateMovie(Long id, MovieRequest request) {
     Movie movie = movieRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
@@ -71,6 +107,12 @@ public class MovieService {
   }
 
   @Transactional
+  @Caching(evict = {
+      @CacheEvict(value = "movies", allEntries = true),
+      @CacheEvict(value = "upcoming-movies", allEntries = true),
+      @CacheEvict(value = "movie-options", allEntries = true),
+      @CacheEvict(value = "movie", key = "#id")
+  })
   public void deleteMovie(Long id) {
     movieRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
