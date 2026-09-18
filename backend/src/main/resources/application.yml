@@ -6,4 +6,3 @@ spring:
     import:
       - classpath:application-rate-limit.yml
       - classpath:application-cache.yml
-
