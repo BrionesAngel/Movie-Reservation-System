@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { AdminUser, UserService } from '../../../core/services/user.service';
+import { AdminUser, UserService } from '../services/user.service';
 import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
 
 @Component({

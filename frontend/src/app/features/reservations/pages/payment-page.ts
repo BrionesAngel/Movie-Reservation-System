@@ -5,8 +5,8 @@ import { lastValueFrom } from 'rxjs';
 import { loadStripe, Stripe, StripeCardElement } from '@stripe/stripe-js';
 import Swal from 'sweetalert2';
 import { environment } from '../../../../environments/environment';
-import { ReservationResponse } from '../../../core/models/reservation.model';
-import { ReservationService } from '../../../core/services/reservation.service';
+import { ReservationPayment } from '../models/reservation.model';
+import { ReservationService } from '../services/reservation.service';
 import { formatDateTime } from '../../../core/utils/date.utils';
 
 interface TicketInfo {
@@ -208,7 +208,7 @@ export class PaymentPage implements OnDestroy {
   private readonly router = inject(Router);
   private readonly reservationService = inject(ReservationService);
 
-  readonly reservation = signal<ReservationResponse | null>(null);
+  readonly reservation = signal<ReservationPayment | null>(null);
   readonly loading = signal(true);
   readonly processing = signal(false);
   readonly resolved = signal(false);
@@ -221,6 +221,12 @@ export class PaymentPage implements OnDestroy {
   readonly ticket = signal<TicketInfo | null>(
     (this.router.getCurrentNavigation()?.extras.state?.['ticket'] as TicketInfo) ??
       (history.state?.['ticket'] as TicketInfo) ??
+      null
+  );
+
+  private readonly clientSecret = signal<string | null>(
+    (this.router.getCurrentNavigation()?.extras.state?.['clientSecret'] as string) ??
+      (history.state?.['clientSecret'] as string) ??
       null
   );
 
@@ -331,7 +337,20 @@ export class PaymentPage implements OnDestroy {
     this.processing.set(true);
     this.error.set(null);
 
-    const result = await stripe.confirmCardPayment(reservation.clientSecret, {
+    let clientSecret = this.clientSecret();
+    if (!clientSecret) {
+      try {
+        const intent = await lastValueFrom(this.reservationService.getPaymentClientSecret(reservation.id));
+        clientSecret = intent.clientSecret;
+        this.clientSecret.set(clientSecret);
+      } catch {
+        this.error.set('Unable to start the payment. Please try again.');
+        this.processing.set(false);
+        return;
+      }
+    }
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
       payment_method: {
         card: cardElement
       }

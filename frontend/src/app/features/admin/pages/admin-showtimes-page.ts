@@ -1,10 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { lastValueFrom } from 'rxjs';
-import { Movie } from '../../../core/models/movie.model';
-import { MovieService } from '../../../core/services/movie.service';
-import { Room, RoomService } from '../../../core/services/room.service';
-import { ShowtimeService } from '../../../core/services/showtime.service';
+import { MovieOption } from '../../movies/models/movie.model';
+import { MovieService } from '../../movies/services/movie.service';
+import { ShowtimeService } from '../../showtimes/services/showtime.service';
 import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
 
 @Component({
@@ -47,8 +46,8 @@ import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
               formControlName="roomId"
             >
               <option [ngValue]="null" disabled>Select a room</option>
-              @for (room of rooms(); track room.id) {
-                <option [ngValue]="room.id">Room {{ room.number }}</option>
+              @for (room of roomNumbers; track room) {
+                <option [ngValue]="room">Room {{ room }}</option>
               }
             </select>
             @if (form.controls.roomId.touched && form.controls.roomId.invalid) {
@@ -105,12 +104,11 @@ import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
 export class AdminShowtimesPage {
   private readonly fb = inject(FormBuilder);
   private readonly movieService = inject(MovieService);
-  private readonly roomService = inject(RoomService);
   private readonly showtimeService = inject(ShowtimeService);
   private readonly uiFeedback = inject(UiFeedbackService);
 
-  readonly movies = signal<Movie[]>([]);
-  readonly rooms = signal<Room[]>([]);
+  readonly movies = signal<MovieOption[]>([]);
+  readonly roomNumbers = [1, 2, 3, 4, 5];
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
@@ -128,14 +126,9 @@ export class AdminShowtimesPage {
 
   private async init(): Promise<void> {
     try {
-      const [movies, rooms] = await Promise.all([
-        lastValueFrom(this.movieService.getMovies()),
-        lastValueFrom(this.roomService.getRooms())
-      ]);
-      this.movies.set(movies);
-      this.rooms.set(rooms);
+      this.movies.set(await lastValueFrom(this.movieService.getMovieOptions()));
     } catch {
-      this.error.set('Failed to load movies and rooms.');
+      this.error.set('Failed to load movies.');
     } finally {
       this.loading.set(false);
     }

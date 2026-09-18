@@ -1,9 +1,16 @@
 import { ShowtimeSeatSummary } from './seat.model';
 
+export interface ShowtimeMovie {
+  id: number;
+  title: string;
+  posterUrl: string;
+  duration_minutes: number;
+}
+
 export interface Showtime {
   id: number;
-  movie: number;
-  room: number;
+  movie: ShowtimeMovie;
+  roomNumber: number;
   startTime: string;
   endTime: string;
   price: number;

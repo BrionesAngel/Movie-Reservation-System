@@ -1,15 +1,14 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Movie } from '../../core/models/movie.model';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Movie } from '../models/movie.model';
 
 @Component({
   selector: 'app-movie-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
   template: `
-    <a
-      class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-      [routerLink]="['/home/movies', movie().id]"
+    <button
+      class="group flex w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+      type="button"
+      (click)="selected.emit(movie())"
     >
       <div class="relative aspect-[2/3] w-full overflow-hidden bg-slate-100">
         @if (movie().posterUrl) {
@@ -34,9 +33,10 @@ import { Movie } from '../../core/models/movie.model';
           </div>
         }
       </div>
-    </a>
+    </button>
   `
 })
 export class MovieCardComponent {
   readonly movie = input.required<Movie>();
+  readonly selected = output<Movie>();
 }

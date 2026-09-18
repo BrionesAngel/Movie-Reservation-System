@@ -12,6 +12,11 @@ export interface Movie {
   genres: Genre[];
 }
 
+export interface MovieOption {
+  id: number;
+  title: string;
+}
+
 export interface MovieRequest {
   title: string;
   description: string;

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { ShowtimeSeatSummary } from '../../../core/models/seat.model';
+import { ShowtimeSeatSummary } from '../models/seat.model';
 
 @Component({
   selector: 'app-seat-grid',

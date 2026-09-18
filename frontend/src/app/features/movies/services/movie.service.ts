@@ -1,8 +1,8 @@
 import { Service, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResourceRequest } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { Movie, MovieRequest } from '../models/movie.model';
+import { environment } from '../../../../environments/environment';
+import { Movie, MovieOption, MovieRequest } from '../models/movie.model';
 
 @Service()
 export class MovieService {
@@ -13,8 +13,20 @@ export class MovieService {
     return this.http.get<Movie[]>(`${this.apiUrl}/api/movies`, { withCredentials: true });
   }
 
+  getMovieOptions(): Observable<MovieOption[]> {
+    return this.http.get<MovieOption[]>(`${this.apiUrl}/api/movies/options`, { withCredentials: true });
+  }
+
+  upcomingMoviesRequest(): HttpResourceRequest {
+    return { url: `${this.apiUrl}/api/movies/upcoming`, withCredentials: true };
+  }
+
   getMovie(movieId: number): Observable<Movie> {
     return this.http.get<Movie>(`${this.apiUrl}/api/movies/${movieId}`, { withCredentials: true });
+  }
+
+  movieRequest(movieId: number): HttpResourceRequest {
+    return { url: `${this.apiUrl}/api/movies/${movieId}`, withCredentials: true };
   }
 
   addMovie(request: MovieRequest): Observable<Movie> {

@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
-import { Reservation } from '../../../core/models/reservation.model';
-import { ReservationService } from '../../../core/services/reservation.service';
+import { Reservation } from '../../reservations/models/reservation.model';
+import { ReservationService } from '../../reservations/services/reservation.service';
 import { toDateParam, today } from '../../../core/utils/date.utils';
 import { DateNavigatorComponent } from '../../../shared/components/date-navigator.component';
 

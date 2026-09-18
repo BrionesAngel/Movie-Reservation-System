@@ -1,7 +1,7 @@
 import { Service, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResourceRequest } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { Showtime, ShowtimeAndSeats, CreateShowtimeRequest } from '../models/showtime.model';
 
 @Service()
@@ -15,6 +15,22 @@ export class ShowtimeService {
       params,
       withCredentials: true
     });
+  }
+
+  showtimesByDateRequest(date: string): HttpResourceRequest {
+    return {
+      url: `${this.apiUrl}/api/showtimes`,
+      params: new HttpParams().set('date', date),
+      withCredentials: true
+    };
+  }
+
+  showtimesByMovieRequest(movieId: number, date: string): HttpResourceRequest {
+    return {
+      url: `${this.apiUrl}/api/showtimes/movie/${movieId}`,
+      params: new HttpParams().set('date', date),
+      withCredentials: true
+    };
   }
 
   getUpcomingShowtimes(): Observable<Showtime[]> {

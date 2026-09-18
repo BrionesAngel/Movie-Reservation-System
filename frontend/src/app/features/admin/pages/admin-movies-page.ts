@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { Movie } from '../../../core/models/movie.model';
-import { MovieService } from '../../../core/services/movie.service';
+import { Movie } from '../../movies/models/movie.model';
+import { MovieService } from '../../movies/services/movie.service';
 import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
 
 @Component({

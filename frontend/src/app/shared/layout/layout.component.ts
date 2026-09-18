@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signa
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { interval } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { CINEMA_TIME_ZONE, nowInTimeZone } from '../../core/utils/date.utils';
 
 @Component({

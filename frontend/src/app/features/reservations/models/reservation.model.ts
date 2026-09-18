@@ -1,4 +1,5 @@
-import { ShowtimeSeatSummary } from './seat.model';
+import { ShowtimeSeatSummary } from '../../showtimes/models/seat.model';
+import { ShowtimeMovie } from '../../showtimes/models/showtime.model';
 
 export type ReservationStatus = 'RESERVED' | 'BOOKED' | 'CANCELED';
 
@@ -14,9 +15,23 @@ export interface Reservation {
   createdAt: string;
   reserveUntil: string;
   totalPrice: number;
+  movie?: ShowtimeMovie;
+  roomNumber?: number;
+  startTime?: string;
 }
 
-export interface ReservationResponse extends Reservation {
+export interface ReservationPayment {
+  id: number;
+  userId: number;
+  seats: ShowtimeSeatSummary[];
+  status: ReservationStatus;
+  paymentStatus?: PaymentStatus | null;
+  createdAt: string;
+  reserveUntil: string;
+  totalPrice: number;
+}
+
+export interface ReservationResponse extends ReservationPayment {
   clientSecret: string;
 }
 

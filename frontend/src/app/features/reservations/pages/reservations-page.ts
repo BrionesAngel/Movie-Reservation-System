@@ -3,20 +3,13 @@ import { CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { Movie } from '../../../core/models/movie.model';
-import { Reservation, ReservationStatus } from '../../../core/models/reservation.model';import { ShowtimeAndSeats } from '../../../core/models/showtime.model';
-import { MovieService } from '../../../core/services/movie.service';
-import { ReservationService } from '../../../core/services/reservation.service';
-import { Room, RoomService } from '../../../core/services/room.service';
-import { ShowtimeService } from '../../../core/services/showtime.service';
+import { Reservation, ReservationStatus } from '../models/reservation.model';
+import { ReservationService } from '../services/reservation.service';
 import { formatDateTime, nowInTimeZone, CINEMA_TIME_ZONE } from '../../../core/utils/date.utils';
 
 interface ReservationView extends Reservation {
   statusLabel: string;
   statusClass: string;
-  movie?: Movie;
-  room?: Room;
-  startTime?: string;
 }
 
 @Component({
@@ -73,9 +66,9 @@ interface ReservationView extends Reservation {
                   <span class="text-sm font-semibold text-slate-600">
                     {{ reservation.startTime ? formatDateTime(reservation.startTime) : '' }}
                   </span>
-                  @if (reservation.room; as room) {
+                  @if (reservation.roomNumber; as roomNumber) {
                     <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
-                      Room {{ room.number }}
+                      Room {{ roomNumber }}
                     </span>
                   }
                   <span class="text-xs text-slate-400">
@@ -113,9 +106,6 @@ interface ReservationView extends Reservation {
 })
 export class ReservationsPage {
   private readonly reservationService = inject(ReservationService);
-  private readonly showtimeService = inject(ShowtimeService);
-  private readonly movieService = inject(MovieService);
-  private readonly roomService = inject(RoomService);
 
   readonly reservations = signal<ReservationView[]>([]);
   readonly loading = signal(true);
@@ -134,49 +124,12 @@ export class ReservationsPage {
     try {
       const reservations = await lastValueFrom(this.reservationService.getMyReservations());
 
-      const showtimeCache = new Map<number, ShowtimeAndSeats>();
-      const movieCache = new Map<number, Movie>();
-      const roomCache = new Map<number, Room>();
-
-      const views: ReservationView[] = [];
-      for (const reservation of reservations) {
-        let movie: Movie | undefined;
-        let room: Room | undefined;
-        let startTime: string | undefined;
-
-        try {
-          let showtime = showtimeCache.get(reservation.showtimeId);
-          if (!showtime) {
-            showtime = await lastValueFrom(this.showtimeService.getShowtime(reservation.showtimeId));
-            showtimeCache.set(reservation.showtimeId, showtime);
-          }
-          startTime = showtime.startTime;
-
-          room = roomCache.get(showtime.room);
-          if (!room) {
-            room = await lastValueFrom(this.roomService.getRoom(showtime.room));
-            roomCache.set(showtime.room, room);
-          }
-
-          movie = movieCache.get(showtime.movie);
-          if (!movie) {
-            movie = await lastValueFrom(this.movieService.getMovie(showtime.movie));
-            movieCache.set(showtime.movie, movie);
-          }
-        } catch {
-          // keep reservation visible without movie info
-        }
-
-        views.push({
+      this.reservations.set(
+        reservations.map((reservation) => ({
           ...reservation,
-          movie,
-          room,
-          startTime,
           ...statusMeta(reservation.status, reservation.paymentStatus)
-        });
-      }
-
-      this.reservations.set(views);
+        }))
+      );
     } catch {
       this.error.set('Failed to load your reservations.');
     } finally {

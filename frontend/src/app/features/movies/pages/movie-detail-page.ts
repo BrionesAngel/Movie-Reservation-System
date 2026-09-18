@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { lastValueFrom } from 'rxjs';
-import { Movie } from '../../../core/models/movie.model';
-import { Showtime } from '../../../core/models/showtime.model';
-import { MovieService } from '../../../core/services/movie.service';
-import { ShowtimeService } from '../../../core/services/showtime.service';
+import { map } from 'rxjs';
 import { formatTime, toDateParam, today } from '../../../core/utils/date.utils';
 import { DateNavigatorComponent } from '../../../shared/components/date-navigator.component';
+import { Showtime } from '../../showtimes/models/showtime.model';
+import { ShowtimeService } from '../../showtimes/services/showtime.service';
+import { Movie } from '../models/movie.model';
+import { MovieService } from '../services/movie.service';
 
 @Component({
   selector: 'app-movie-detail-page',
@@ -34,10 +36,12 @@ import { DateNavigatorComponent } from '../../../shared/components/date-navigato
             <p class="mt-4 whitespace-pre-line leading-relaxed text-slate-700">{{ movie.description }}</p>
           </div>
         </div>
-      } @else if (loading()) {
+      } @else if (movieResource.isLoading()) {
         <div class="h-80 animate-pulse rounded-2xl bg-slate-200"></div>
-      } @else if (error()) {
-        <p class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ error() }}</p>
+      } @else if (movieResource.error()) {
+        <p class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          Failed to load movie. Please try again.
+        </p>
       }
 
       <section class="mt-10">
@@ -63,7 +67,7 @@ import { DateNavigatorComponent } from '../../../shared/components/date-navigato
           </div>
         }
 
-        @if (showtimesLoading()) {
+        @if (showtimesResource.isLoading()) {
           <p class="mt-4 text-sm text-slate-500">Loading showtimes...</p>
         }
       </section>
@@ -75,56 +79,34 @@ export class MovieDetailPage {
   private readonly movieService = inject(MovieService);
   private readonly showtimeService = inject(ShowtimeService);
 
-  readonly movie = signal<Movie | null>(null);
-  readonly showtimes = signal<Showtime[]>([]);
+  private readonly movieId = toSignal(
+    this.route.paramMap.pipe(map((params) => Number(params.get('movieId'))))
+  );
+
   readonly selectedDate = signal<Date>(today());
-  readonly loading = signal(true);
-  readonly showtimesLoading = signal(false);
-  readonly error = signal<string | null>(null);
   readonly formatTime = formatTime;
 
-  constructor() {
-    void this.init();
-  }
+  readonly movieResource = httpResource<Movie>(() => {
+    const movieId = this.movieId();
+    if (!movieId) return undefined;
+    return this.movieService.movieRequest(movieId);
+  });
 
-  private async init(): Promise<void> {
-    const movieId = Number(this.route.snapshot.paramMap.get('movieId'));
-    if (!movieId) {
-      this.error.set('Movie not found.');
-      this.loading.set(false);
-      return;
-    }
+  readonly movie = computed<Movie | null>(() =>
+    this.movieResource.hasValue() ? (this.movieResource.value() ?? null) : null
+  );
 
-    this.loading.set(true);
-    try {
-      this.movie.set(await lastValueFrom(this.movieService.getMovie(movieId)));
-      await this.loadShowtimes();
-    } catch {
-      this.error.set('Failed to load movie. Please try again.');
-    } finally {
-      this.loading.set(false);
-    }
-  }
+  readonly showtimesResource = httpResource<Showtime[]>(() => {
+    const movieId = this.movieId();
+    if (!movieId) return undefined;
+    return this.showtimeService.showtimesByMovieRequest(movieId, toDateParam(this.selectedDate()));
+  });
 
-  async onDateChange(date: Date): Promise<void> {
+  readonly showtimes = computed<Showtime[]>(() =>
+    this.showtimesResource.hasValue() ? (this.showtimesResource.value() ?? []) : []
+  );
+
+  onDateChange(date: Date): void {
     this.selectedDate.set(date);
-    await this.loadShowtimes();
-  }
-
-  private async loadShowtimes(): Promise<void> {
-    const movie = this.movie();
-    if (!movie) return;
-
-    this.showtimesLoading.set(true);
-    try {
-      const showtimes = await lastValueFrom(
-        this.showtimeService.getShowtimesByDate(toDateParam(this.selectedDate()))
-      );
-      this.showtimes.set(showtimes.filter((st) => st.movie === movie.id));
-    } catch {
-      this.showtimes.set([]);
-    } finally {
-      this.showtimesLoading.set(false);
-    }
   }
 }

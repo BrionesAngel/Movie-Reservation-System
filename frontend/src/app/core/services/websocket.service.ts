@@ -1,7 +1,7 @@
 import { Service, inject, signal } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 
 @Service()
 export class WebSocketService {

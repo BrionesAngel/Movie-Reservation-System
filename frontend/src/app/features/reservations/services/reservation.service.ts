@@ -1,9 +1,10 @@
 import { Service, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import {
   Reservation,
+  ReservationPayment,
   ReservationRequest,
   ReservationResponse
 } from '../models/reservation.model';
@@ -35,9 +36,16 @@ export class ReservationService {
     });
   }
 
-  getReservationPayment(reservationId: number): Observable<ReservationResponse> {
-    return this.http.get<ReservationResponse>(
+  getReservationPayment(reservationId: number): Observable<ReservationPayment> {
+    return this.http.get<ReservationPayment>(
       `${this.apiUrl}/api/reservations/${reservationId}/payment`,
+      { withCredentials: true }
+    );
+  }
+
+  getPaymentClientSecret(reservationId: number): Observable<{ clientSecret: string }> {
+    return this.http.get<{ clientSecret: string }>(
+      `${this.apiUrl}/api/reservations/${reservationId}/payment-intent`,
       { withCredentials: true }
     );
   }

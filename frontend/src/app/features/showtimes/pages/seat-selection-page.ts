@@ -3,13 +3,10 @@ import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { Movie } from '../../../core/models/movie.model';
-import { Reservation, ReservationStatus } from '../../../core/models/reservation.model';
-import { ShowtimeAndSeats } from '../../../core/models/showtime.model';
-import { MovieService } from '../../../core/services/movie.service';
-import { ReservationService } from '../../../core/services/reservation.service';
-import { Room, RoomService } from '../../../core/services/room.service';
-import { ShowtimeService } from '../../../core/services/showtime.service';
+import { Reservation, ReservationResponse, ReservationStatus } from '../../reservations/models/reservation.model';
+import { ShowtimeAndSeats } from '../models/showtime.model';
+import { ReservationService } from '../../reservations/services/reservation.service';
+import { ShowtimeService } from '../services/showtime.service';
 import { formatDateTime } from '../../../core/utils/date.utils';
 import { SeatGridComponent } from '../components/seat-grid.component';
 
@@ -21,13 +18,11 @@ import { SeatGridComponent } from '../components/seat-grid.component';
     <div class="mx-auto max-w-4xl lg:-mt-20">
       @if (showtime(); as showtime) {
         <header class="mb-6">
-          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ movie()?.title ?? 'Showtime' }}</h1>
+          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ showtime.movie.title }}</h1>
           <p class="mt-1 text-slate-500">{{ formatDateTime(showtime.startTime) }}</p>
-          @if (room(); as room) {
-            <span class="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              Room {{ room.number }}
-            </span>
-          }
+          <span class="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            Room {{ showtime.roomNumber }}
+          </span>
         </header>
       }
 
@@ -116,13 +111,9 @@ export class SeatSelectionPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly showtimeService = inject(ShowtimeService);
-  private readonly movieService = inject(MovieService);
   private readonly reservationService = inject(ReservationService);
-  private readonly roomService = inject(RoomService);
 
   readonly showtime = signal<ShowtimeAndSeats | null>(null);
-  readonly movie = signal<Movie | null>(null);
-  readonly room = signal<Room | null>(null);
   readonly seats = computed(() => this.showtime()?.seats ?? []);
   readonly myReservations = signal<Reservation[]>([]);
   readonly selectedSeatIds = signal<Set<number>>(new Set());
@@ -167,8 +158,6 @@ export class SeatSelectionPage {
   private async refresh(showtimeId: number): Promise<void> {
     const showtime = await lastValueFrom(this.showtimeService.getShowtime(showtimeId));
     this.showtime.set(showtime);
-    this.movie.set(await lastValueFrom(this.movieService.getMovie(showtime.movie)));
-    this.room.set(await lastValueFrom(this.roomService.getRoom(showtime.room)));
 
     const mine = await lastValueFrom(this.reservationService.getMyReservations());
     this.myReservations.set(
@@ -274,15 +263,18 @@ export class SeatSelectionPage {
     }
   }
 
-  private navigateToPayment(reservation: Reservation): void {
+  private navigateToPayment(reservation: Reservation | ReservationResponse): void {
+    const showtime = this.showtime();
+    const clientSecret = 'clientSecret' in reservation ? reservation.clientSecret : undefined;
     void this.router.navigate(['/home/reservations', reservation.id, 'payment'], {
       state: {
         ticket: {
-          movieTitle: this.movie()?.title,
-          moviePosterUrl: this.movie()?.posterUrl,
-          roomNumber: this.room()?.number,
-          startTime: this.showtime()?.startTime
-        }
+          movieTitle: showtime?.movie.title,
+          moviePosterUrl: showtime?.movie.posterUrl,
+          roomNumber: showtime?.roomNumber,
+          startTime: showtime?.startTime
+        },
+        clientSecret
       }
     });
   }

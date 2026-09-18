@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { Genre, MovieRequest } from '../../../core/models/movie.model';
-import { GenreService } from '../../../core/services/genre.service';
-import { MovieService } from '../../../core/services/movie.service';
+import { Genre, MovieRequest } from '../../movies/models/movie.model';
+import { GenreService } from '../../movies/services/genre.service';
+import { MovieService } from '../../movies/services/movie.service';
 import { UiFeedbackService } from '../../../core/services/ui-feedback.service';
 
 @Component({
