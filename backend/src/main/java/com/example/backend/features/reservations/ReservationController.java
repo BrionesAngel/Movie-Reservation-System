@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.backend.features.auth.security.CustomUserPrincipal;
+import com.example.backend.features.payments.DTOs.CreatePaymentResponse;
+import com.example.backend.features.reservations.DTOs.ReservationPaymentResponse;
 import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
 import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
@@ -41,10 +43,18 @@ public class ReservationController {
 
   @GetMapping("/{reservationId}/payment")
   @ResponseStatus(HttpStatus.OK)
-  public ReservationResponse getReservationPayment(
+  public ReservationPaymentResponse getReservationPayment(
       @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
       @PathVariable Long reservationId) {
     return reservationService.getReservationPaymentDetails(customUserPrincipal.getUserId(), reservationId);
+  }
+
+  @GetMapping("/{reservationId}/payment-intent")
+  @ResponseStatus(HttpStatus.OK)
+  public CreatePaymentResponse getReservationPaymentIntent(
+      @AuthenticationPrincipal CustomUserPrincipal customUserPrincipal,
+      @PathVariable Long reservationId) {
+    return reservationService.getReservationPaymentIntent(customUserPrincipal.getUserId(), reservationId);
   }
 
   @PatchMapping("/{reservationId}/cancel")

@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.backend.features.payments.PaymentService;
 import com.example.backend.features.payments.DTOs.CreatePaymentResponse;
+import com.example.backend.features.reservations.DTOs.ReservationPaymentResponse;
 import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
 import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
@@ -22,6 +23,7 @@ import com.example.backend.features.showtime_seats.ShowtimeSeatStatus;
 import com.example.backend.features.showtime_seats.exceptions.ShowtimeSeatNotAvailableException;
 import com.example.backend.features.showtimes.Showtime;
 import com.example.backend.features.showtimes.ShowtimeRepository;
+import com.example.backend.features.showtimes.DTOs.ShowtimeMovieResponse;
 import com.example.backend.shared.constants.CinemaTime;
 import com.example.backend.features.users.User;
 import com.example.backend.features.users.UserRepository;
@@ -97,14 +99,21 @@ public class ReservationService {
   }
 
   @Transactional
-  public ReservationResponse getReservationPaymentDetails(Long userId, Long reservationId) {
+  public ReservationPaymentResponse getReservationPaymentDetails(Long userId, Long reservationId) {
     Reservation reservation = reservationRepository.getReservationWithSeatsByIdAndUserId(reservationId, userId)
         .orElseThrow(
             () -> new ResourceNotFoundException("reservation: " + reservationId + " of user: " + userId + "not found"));
 
-    String clientSecret = paymentService.getClientSecretByReservationId(reservationId);
+    return this.toReservationPaymentResponse(reservation, reservation.getSeats());
+  }
 
-    return this.toReservationResponse(reservation, clientSecret, reservation.getSeats());
+  @Transactional
+  public CreatePaymentResponse getReservationPaymentIntent(Long userId, Long reservationId) {
+    Reservation reservation = reservationRepository.getReservationWithSeatsByIdAndUserId(reservationId, userId)
+        .orElseThrow(
+            () -> new ResourceNotFoundException("reservation: " + reservationId + " of user: " + userId + "not found"));
+
+    return new CreatePaymentResponse(paymentService.getClientSecretByReservationId(reservation.getId()));
   }
 
   @Transactional
@@ -180,10 +189,9 @@ public class ReservationService {
 
   }
 
-  public ReservationSummaryResponse toReservationSummaryResponse(Reservation reservation, List<ShowtimeSeat> seats) {
-    return new ReservationSummaryResponse(
+  public ReservationPaymentResponse toReservationPaymentResponse(Reservation reservation, List<ShowtimeSeat> seats) {
+    return new ReservationPaymentResponse(
         reservation.getId(),
-        reservation.getShowtime().getId(),
         reservation.getUser().getId(),
         showtimeSeatService.toShowtimeSeatSummary(seats),
         reservation.getStatus(),
@@ -191,7 +199,23 @@ public class ReservationService {
         reservation.getCreatedAt(),
         reservation.getReserveUntil(),
         reservation.getTotalPrice());
+  }
 
+  public ReservationSummaryResponse toReservationSummaryResponse(Reservation reservation, List<ShowtimeSeat> seats) {
+    Showtime showtime = reservation.getShowtime();
+    return new ReservationSummaryResponse(
+        reservation.getId(),
+        showtime.getId(),
+        reservation.getUser().getId(),
+        showtimeSeatService.toShowtimeSeatSummary(seats),
+        reservation.getStatus(),
+        paymentService.getPaymentStatusByReservationId(reservation.getId()),
+        reservation.getCreatedAt(),
+        reservation.getReserveUntil(),
+        reservation.getTotalPrice(),
+        ShowtimeMovieResponse.from(showtime.getMovie()),
+        showtime.getRoom().getNumber(),
+        showtime.getStartTime().atZone(CinemaTime.ZONE).toLocalDateTime());
   }
 
   public Reservation getReservationByIdWithSeatsOrThrow(Long reservationId) {

@@ -9,15 +9,21 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
   @Query("""
-        SELECT r FROM Reservation r
+        SELECT DISTINCT r FROM Reservation r
         LEFT JOIN FETCH r.seats
+        LEFT JOIN FETCH r.showtime
+        LEFT JOIN FETCH r.showtime.movie
+        LEFT JOIN FETCH r.showtime.room
         WHERE r.createdAt BETWEEN :start AND :end
       """)
   List<Reservation> findAllByCreatedAtBetweenWithSeats(Instant start, Instant end);
 
   @Query("""
-        SELECT r FROM Reservation r
+        SELECT DISTINCT r FROM Reservation r
         LEFT JOIN FETCH r.seats
+        LEFT JOIN FETCH r.showtime
+        LEFT JOIN FETCH r.showtime.movie
+        LEFT JOIN FETCH r.showtime.room
         WHERE r.user.id = :userId
         ORDER BY r.createdAt DESC
       """)
