@@ -24,7 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry.addEndpoint("/backend-websocket")
-        .setAllowedOrigins("https://hoppscotch.io", "http://localhost:4200");
+        .setAllowedOrigins("https://movie-system-five.vercel.app", "http://localhost:4200");
   }
 
   @Override
