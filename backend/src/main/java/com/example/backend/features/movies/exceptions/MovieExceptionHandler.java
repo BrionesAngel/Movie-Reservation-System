@@ -19,4 +19,11 @@ public class MovieExceptionHandler extends BaseExceptionHandler {
     log.warn("Movie cannot be deleted: {}", ex.getMessage());
     return buildError(HttpStatus.CONFLICT, "MOVIE_HAS_SHOWTIMES");
   }
+
+  @ExceptionHandler(DuplicateMovieException.class)
+  public ResponseEntity<ErrorResponse> handleDuplicateMovie(DuplicateMovieException ex) {
+    log.warn("Duplicate movie: {}", ex.getMessage());
+    return buildError(HttpStatus.CONFLICT, "DUPLICATE_MOVIE");
+  }
+
 }

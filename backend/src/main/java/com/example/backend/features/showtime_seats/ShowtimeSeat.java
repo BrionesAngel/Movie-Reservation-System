@@ -17,7 +17,8 @@ import lombok.*;
 public class ShowtimeSeat {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seat_seq")
+  @SequenceGenerator(name = "seat_seq", sequenceName = "showtime_seats_seq", allocationSize = 50)
   private Long id;
 
   @Version

@@ -6,3 +6,11 @@ spring:
     import:
       - classpath:application-rate-limit.yml
       - classpath:application-cache.yml
+
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging.simp: DEBUG
+
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +17,8 @@ import com.example.backend.features.reservations.DTOs.ReservationPaymentResponse
 import com.example.backend.features.reservations.DTOs.ReservationRequest;
 import com.example.backend.features.reservations.DTOs.ReservationResponse;
 import com.example.backend.features.reservations.DTOs.ReservationSummaryResponse;
+import com.example.backend.features.reservations.events.SeatsReleasedEvent;
+import com.example.backend.features.reservations.events.SeatsReservedEvent;
 import com.example.backend.features.reservations.execptions.ReservationExpiredException;
 import com.example.backend.features.reservations.execptions.ReservationNotCancellableException;
 import com.example.backend.features.showtime_seats.ShowtimeSeat;
@@ -35,12 +40,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReservationService {
 
+  private final CacheManager cacheManager;
   private final ReservationRepository reservationRepository;
   private final ShowtimeRepository showtimeRepository;
   private final ShowtimeSeatRepository showtimeSeatRepository;
   private final ShowtimeSeatService showtimeSeatService;
   private final PaymentService paymentService;
   private final UserRepository userRepository;
+  private final ApplicationEventPublisher eventPublisher;
+
+  private void cancelAndReleaseSeats(Reservation reservation) {
+    reservation.setStatus(ReservationStatus.CANCELED);
+    showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+
+    eventPublisher.publishEvent(new SeatsReleasedEvent(
+        reservation.getShowtime().getId(),
+        reservation.getSeats().stream().map(ShowtimeSeat::getId).toList()));
+
+    cacheManager.getCache("showtime")
+        .evict(reservation.getShowtime().getId());
+  }
 
   @Transactional
   public void cancelReservation(Long userId, Long reservationId) {
@@ -52,10 +71,11 @@ public class ReservationService {
       throw new ReservationNotCancellableException(
           "reservation for showtime: " + reservation.getShowtime().getId() + " has already started");
     }
-
-    reservation.setStatus(ReservationStatus.CANCELED);
-    showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+    this.cancelAndReleaseSeats(reservation);
     paymentService.refundPaymentIfSucceeded(reservation.getId());
+
+    cacheManager.getCache("showtime")
+        .evict(reservation.getShowtime().getId());
   }
 
   @Transactional
@@ -66,8 +86,7 @@ public class ReservationService {
   @Transactional
   public void markReservationAsCanceled(Long reservationId) {
     Reservation reservation = this.getReservationByIdWithSeatsOrThrow(reservationId);
-    reservation.setStatus(ReservationStatus.CANCELED);
-    showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+    this.cancelAndReleaseSeats(reservation);
   }
 
   @Transactional
@@ -82,8 +101,7 @@ public class ReservationService {
     Reservation reservation = this.getReservationByIdWithSeatsOrThrow(reservationId);
 
     if (Instant.now().isAfter(reservation.getReserveUntil())) {
-      reservation.setStatus(ReservationStatus.CANCELED);
-      showtimeSeatService.markSeatsAsAvailable(reservation.getSeats());
+      this.cancelAndReleaseSeats(reservation);
       throw new ReservationExpiredException("" + reservation.getId());
     }
 
@@ -127,9 +145,10 @@ public class ReservationService {
   }
 
   @Transactional
+  @CacheEvict(value = "showtime", key = "#request.showtimeId()")
   public ReservationResponse createReservation(Long userId, ReservationRequest request) {
     User user = userRepository.findById(userId)
-      .orElseThrow(() -> new ResourceNotFoundException("user: " + userId + "not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("user: " + userId + "not found"));
 
     Showtime showtime = showtimeRepository.findById(request.showtimeId())
         .orElseThrow(() -> new ResourceNotFoundException("showtime: " + request.showtimeId() + " not found"));
@@ -166,6 +185,10 @@ public class ReservationService {
       s.setStatus(ShowtimeSeatStatus.RESERVED);
       s.setReservation(savedReservation);
     });
+
+    eventPublisher.publishEvent(new SeatsReservedEvent(
+        request.showtimeId(),
+        seats.stream().map(ShowtimeSeat::getId).toList()));
 
     long amountInCents = savedReservation.getTotalPrice().multiply(BigDecimal.valueOf(100)).longValueExact();
 

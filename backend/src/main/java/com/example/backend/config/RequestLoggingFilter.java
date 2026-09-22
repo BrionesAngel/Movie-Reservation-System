@@ -28,5 +28,7 @@ public class RequestLoggingFilter implements Filter {
         duration);
 
     log.info("RemoteAddr: {}", request.getRemoteAddr());
+    log.info("\n");
+
   }
 }

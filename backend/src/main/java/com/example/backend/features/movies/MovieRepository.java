@@ -2,6 +2,7 @@ package com.example.backend.features.movies;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -18,4 +19,8 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
   @Query("SELECT new com.example.backend.features.movies.DTOs.MovieOptionResponse(m.id, m.title) FROM Movie m ORDER BY m.title")
   List<MovieOptionResponse> findAllMovieOptions();
+
+  boolean existsByTitle(String title);
+
+  Optional<Movie> findByTitle(String title);
 }

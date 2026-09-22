@@ -45,6 +45,7 @@ public class UserService {
     user.setRole(Role.ADMIN);
   }
 
+  @Transactional
   public User createUser(RegisterRequest request) {
     String nextUsername = request.username().trim();
 

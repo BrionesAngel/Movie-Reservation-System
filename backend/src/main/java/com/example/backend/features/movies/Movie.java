@@ -22,7 +22,7 @@ public class Movie {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(length = 150, nullable = false)
+  @Column(length = 150, nullable = false, unique = true)
   private String title;
 
   @Column(columnDefinition = "TEXT", nullable = false)

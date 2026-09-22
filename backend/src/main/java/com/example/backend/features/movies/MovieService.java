@@ -16,6 +16,7 @@ import com.example.backend.features.genres.GenreRepository;
 import com.example.backend.features.movies.DTOs.MovieOptionResponse;
 import com.example.backend.features.movies.DTOs.MovieRequest;
 import com.example.backend.features.movies.DTOs.MovieResponse;
+import com.example.backend.features.movies.exceptions.DuplicateMovieException;
 import com.example.backend.features.movies.exceptions.MovieHasShowtimesException;
 import com.example.backend.features.showtimes.ShowtimeRepository;
 import com.example.backend.shared.exceptions.ResourceNotFoundException;
@@ -69,6 +70,9 @@ public class MovieService {
       @CacheEvict(value = "movie-options", allEntries = true)
   })
   public MovieResponse addMovie(MovieRequest request) {
+    if (movieRepository.existsByTitle(request.title()))
+      throw new DuplicateMovieException("movie with title: " + request.title() + " already exists");
+
     Set<Genre> genres = this.getGenres(request.genres());
 
     Movie movie = Movie.builder()
@@ -94,6 +98,12 @@ public class MovieService {
   public MovieResponse updateMovie(Long id, MovieRequest request) {
     Movie movie = movieRepository.findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
+
+    Movie movieCheck = movieRepository.findByTitle(request.title())
+        .orElseThrow(() -> new ResourceNotFoundException("movie not found"));
+
+    if (movie.getId() != movieCheck.getId())
+      throw new DuplicateMovieException("movie with title: " + request.title() + " already exists");
 
     Set<Genre> genres = this.getGenres(request.genres());
 
