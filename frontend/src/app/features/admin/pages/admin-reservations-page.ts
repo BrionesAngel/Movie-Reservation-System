@@ -10,63 +10,7 @@ import { DateNavigatorComponent } from '../../../shared/components/date-navigato
   selector: 'app-admin-reservations-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DateNavigatorComponent, CurrencyPipe],
-  template: `
-    <div class="mx-auto max-w-6xl">
-      <header class="mb-8">
-        <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Reservations</h1>
-        <p class="mt-1 text-slate-500">All reservations created on a day.</p>
-      </header>
-
-      <div class="mb-6">
-        <app-date-navigator [allowBack]="true" (dateChange)="onDateChange($event)" />
-      </div>
-
-      @if (loading()) {
-        <div class="space-y-3">
-          @for (item of placeholderCount; track $index) {
-            <div class="h-16 animate-pulse rounded-2xl bg-slate-200"></div>
-          }
-        </div>
-      } @else if (error()) {
-        <p class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ error() }}</p>
-      } @else {
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <table class="w-full text-left text-sm">
-            <thead class="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-              <tr>
-                <th class="px-5 py-3">User</th>
-                <th class="px-5 py-3">Status</th>
-                <th class="px-5 py-3">Seats</th>
-                <th class="hidden px-5 py-3 md:table-cell">Created at</th>
-                <th class="px-5 py-3 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (reservation of reservations(); track reservation.id) {
-                <tr class="transition hover:bg-slate-50">
-                  <td class="px-5 py-3 text-slate-900">#{{ reservation.userId }}</td>
-                  <td class="px-5 py-3">
-                    <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [class]="statusClass(reservation.status)">
-                      {{ statusLabel(reservation.status) }}
-                    </span>
-                  </td>
-                  <td class="px-5 py-3 text-slate-600">
-                    {{ reservation.seats.map((s) => s.row + s.number).join(', ') || '—' }}
-                  </td>
-                  <td class="hidden px-5 py-3 text-slate-600 md:table-cell">{{ formatDateTime(reservation.createdAt) }}</td>
-                  <td class="px-5 py-3 text-right font-medium text-slate-900">{{ reservation.totalPrice | currency }}</td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="5" class="px-5 py-12 text-center text-slate-500">No reservations on this day.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </div>
-  `
+  templateUrl: './admin-reservations-page.html',
 })
 export class AdminReservationsPage {
   private readonly reservationService = inject(ReservationService);

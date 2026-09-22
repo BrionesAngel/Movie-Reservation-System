@@ -1,63 +1,37 @@
-import { Service, inject, signal } from '@angular/core';
-import { Client, IMessage } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
-import { AuthService } from '../auth/auth.service';
+import { Service } from '@angular/core';
+import { RxStomp } from '@stomp/rx-stomp';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Service()
-export class WebSocketService {
-  private client?: Client;
-  private authService = inject(AuthService);
+export class WebsocketService {
+  private rxStomp = new RxStomp();
 
-  connected = signal(false);
 
-  connect(endpoint = 'http://localhost:8080/backend-websocket'): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const token = this.authService.getAccessToken?.();
+  public connect(accessToken: string): void {
+    const wsUrl = environment.apiUrl.replace(/^http/, 'ws') + '/backend-websocket';
 
-      this.client = new Client({
-        webSocketFactory: () => new SockJS(endpoint),
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-        connectHeaders: token
-          ? { Authorization: `Bearer ${token}` }
-          : {},
-        onConnect: () => {
-          this.connected.set(true);
-          resolve();
-        },
-        onDisconnect: () => this.connected.set(false),
-        onStompError: (frame) => {
-          this.connected.set(false);
-          reject(frame);
-        },
-      });
-
-      this.client.activate();
-    });
-  }
-
-  subscribe<T>(destination: string, callback: (data: T) => void): () => void {
-    if (!this.client?.connected) return () => { };
-
-    const sub = this.client.subscribe(destination, (msg: IMessage) => {
-      callback(JSON.parse(msg.body) as T);
+    this.rxStomp.configure({
+      brokerURL: wsUrl,
+      connectHeaders: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      reconnectDelay: 5000,
     });
 
-    return () => sub.unsubscribe();
+    this.rxStomp.activate();
   }
 
-  publish(destination: string, body: unknown): void {
-    if (!this.client?.connected) return;
-
-    this.client.publish({
-      destination,
-      body: JSON.stringify(body),
-    });
+  public subscribeToShowtime(showtimeId: number): Observable<any> {
+    return this.rxStomp.watch(`/topic/showtimes/${showtimeId}`).pipe(
+      map(message => JSON.parse(message.body))
+    );
   }
 
-  disconnect(): void {
-    this.client?.deactivate();
-    this.connected.set(false);
+  public disconnect(): void {
+    this.rxStomp.deactivate();
   }
 }

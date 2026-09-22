@@ -4,37 +4,7 @@ import { Movie } from '../models/movie.model';
 @Component({
   selector: 'app-movie-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <button
-      class="group flex w-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-      type="button"
-      (click)="selected.emit(movie())"
-    >
-      <div class="relative aspect-[2/3] w-full overflow-hidden bg-slate-100">
-        @if (movie().posterUrl) {
-          <img
-            class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-            [src]="movie().posterUrl"
-            [alt]="movie().title"
-            loading="lazy"
-          />
-        }
-      </div>
-      <div class="flex flex-1 flex-col gap-1 p-4">
-        <h3 class="truncate font-semibold text-slate-900">{{ movie().title }}</h3>
-        <p class="text-xs text-slate-500">{{ movie().duration_minutes }} min</p>
-        @if (movie().genres.length) {
-          <div class="mt-2 flex h-[44px] flex-wrap content-start gap-1 overflow-hidden">
-            @for (genre of movie().genres.slice(0, 3); track genre.id) {
-              <span class="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
-                {{ genre.name }}
-              </span>
-            }
-          </div>
-        }
-      </div>
-    </button>
-  `
+  templateUrl: './movie-card.component.html',
 })
 export class MovieCardComponent {
   readonly movie = input.required<Movie>();

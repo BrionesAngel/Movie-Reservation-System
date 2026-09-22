@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnDestroy, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
@@ -8,110 +9,27 @@ import { ShowtimeAndSeats } from '../models/showtime.model';
 import { ReservationService } from '../../reservations/services/reservation.service';
 import { ShowtimeService } from '../services/showtime.service';
 import { formatDateTime } from '../../../core/utils/date.utils';
+import { WebsocketService } from '../../../core/services/websocket.service';
 import { SeatGridComponent } from '../components/seat-grid.component';
+
+interface SeatEvent {
+  type: 'SEAT_RESERVED' | 'SEAT_RELEASED';
+  seatId: number;
+}
 
 @Component({
   selector: 'app-seat-selection-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SeatGridComponent, CurrencyPipe],
-  template: `
-    <div class="mx-auto max-w-4xl lg:-mt-20">
-      @if (showtime(); as showtime) {
-        <header class="mb-6">
-          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ showtime.movie.title }}</h1>
-          <p class="mt-1 text-slate-500">{{ formatDateTime(showtime.startTime) }}</p>
-          <span class="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-            Room {{ showtime.roomNumber }}
-          </span>
-        </header>
-      }
-
-      @if (loading()) {
-        <div class="h-96 animate-pulse rounded-2xl bg-slate-200"></div>
-      } @else if (error()) {
-        <p class="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ error() }}</p>
-      } @else {
-        @if (myReservations().length > 0) {
-          <div class="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 class="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">Your current seats</h2>
-            <div class="space-y-3">
-              @for (r of myReservations(); track r.id) {
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                  <div class="flex items-center gap-3">
-                    <span class="font-medium text-slate-900">{{ seatLabel(r) }}</span>
-                    <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [class]="statusClass(r.status)">
-                      {{ statusLabel(r.status) }}
-                    </span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    @if (r.status === 'RESERVED') {
-                      <button
-                        class="rounded-lg bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-                        type="button"
-                        (click)="goToPay(r)"
-                      >
-                        Pay
-                      </button>
-                    }
-                    <button
-                      class="rounded-lg border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      type="button"
-                      [disabled]="canceling()"
-                      (click)="cancelReservation(r)"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-        }
-
-        @if (seats().length > 0) {
-          <app-seat-grid [seats]="seats()" (selectionChange)="onSelectionChange($event)" />
-
-          <div class="mt-6 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-slate-500">
-                {{ selectedCount() }} seat{{ selectedCount() === 1 ? '' : 's' }} selected
-              </p>
-              @if (selectedLabels().length > 0) {
-                <p class="text-sm font-medium text-slate-800">{{ selectedLabels() }}</p>
-              }
-              <p class="mt-1 text-lg font-semibold text-slate-900">
-                {{ totalPrice() | currency }}
-              </p>
-            </div>
-<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <button
-                class="w-full rounded-xl border border-slate-300 px-8 py-3 font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                type="button"
-                [disabled]="reserving()"
-                (click)="cancelSelection()"
-              >
-                Cancel
-              </button>
-              <button
-                class="w-full rounded-xl bg-linear-to-r from-violet-600 via-fuchsia-500 to-pink-500 px-8 py-3 font-semibold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-                type="button"
-                [disabled]="selectedCount() === 0 || reserving()"
-                (click)="reserve()"
-              >
-                {{ reserving() ? 'Reserving...' : 'Reserve seats' }}
-              </button>
-            </div>
-          </div>
-        }
-      }
-    </div>
-  `
+  templateUrl: './seat-selection-page.html',
 })
-export class SeatSelectionPage {
+export class SeatSelectionPage implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly showtimeService = inject(ShowtimeService);
   private readonly reservationService = inject(ReservationService);
+  private readonly websocketService = inject(WebsocketService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly showtime = signal<ShowtimeAndSeats | null>(null);
   readonly seats = computed(() => this.showtime()?.seats ?? []);
@@ -137,6 +55,10 @@ export class SeatSelectionPage {
     void this.init();
   }
 
+  ngOnDestroy(): void {
+    this.websocketService.disconnect();
+  }
+
   private async init(): Promise<void> {
     const showtimeId = Number(this.route.snapshot.paramMap.get('showtimeId'));
     if (!showtimeId) {
@@ -148,6 +70,29 @@ export class SeatSelectionPage {
     this.loading.set(true);
     try {
       await this.refresh(showtimeId);
+
+      const token = localStorage.getItem('accessToken');
+      if (!token) return;
+
+      this.websocketService.connect(token);
+      this.websocketService
+        .subscribeToShowtime(showtimeId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((event: SeatEvent) => {
+          if (event.type !== 'SEAT_RESERVED' && event.type !== 'SEAT_RELEASED') return;
+
+          this.showtime.update((showtime) => {
+            if (!showtime) return showtime;
+            return {
+              ...showtime,
+              seats: showtime.seats.map((seat) =>
+                seat.id === event.seatId
+                  ? { ...seat, status: event.type === 'SEAT_RESERVED' ? 'RESERVED' : 'AVAILABLE' }
+                  : seat
+              )
+            };
+          });
+        });
     } catch {
       this.error.set('Failed to load showtime. Please try again.');
     } finally {
