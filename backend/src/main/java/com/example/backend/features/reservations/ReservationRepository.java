@@ -15,6 +15,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         LEFT JOIN FETCH r.showtime.movie
         LEFT JOIN FETCH r.showtime.room
         WHERE r.createdAt BETWEEN :start AND :end
+        ORDER BY r.createdAt DESC
       """)
   List<Reservation> findAllByCreatedAtBetweenWithSeats(Instant start, Instant end);
 
@@ -26,6 +27,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         LEFT JOIN FETCH r.showtime.room
         WHERE r.user.id = :userId
         ORDER BY r.createdAt DESC
+        LIMIT 10
       """)
   List<Reservation> findAllByUserIdWithSeats(Long userId);
 

@@ -49,7 +49,7 @@ dependencies {
   implementation 'com.stripe:stripe-java:33.3.0'
 
   implementation 'org.springframework.boot:spring-boot-starter-cache'
-  implementation(platform("com.bucket4j:bucket4j:8.10.1"))
+  implementation("com.giffing.bucket4j.spring.boot.starter:bucket4j-spring-boot-starter:0.14.0")
   implementation 'com.github.ben-manes.caffeine:caffeine:3.2.4'
 }
 

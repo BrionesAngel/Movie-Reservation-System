@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
 import { lastValueFrom } from 'rxjs';
 import { Reservation } from '../../reservations/models/reservation.model';
@@ -19,6 +19,11 @@ export class AdminReservationsPage {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly placeholderCount = Array.from({ length: 5 });
+  readonly totalEarnings = computed(() =>
+    this.reservations()
+      .filter((r) => r.status === 'BOOKED')
+      .reduce((sum, r) => sum + r.totalPrice, 0)
+  );
   readonly formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString('en-US', {
       month: 'short',
