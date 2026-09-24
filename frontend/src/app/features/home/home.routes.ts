@@ -7,7 +7,6 @@ export const HOME_ROUTES: Routes = [
   {
     path: '',
     component: LayoutComponent,
-    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -24,6 +23,7 @@ export const HOME_ROUTES: Routes = [
       },
       {
         path: 'reservations',
+        canActivate: [authGuard],
         loadChildren: () =>
           import('../reservations/reservations.routes').then((m) => m.RESERVATIONS_ROUTES)
       }

@@ -17,6 +17,7 @@ export class LayoutComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   readonly user = this.authService.currentUser;
+  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
   readonly isAdmin = computed(() => this.user()?.role === 'ADMIN');
   readonly username = computed(() => this.user()?.username ?? '');
   readonly initial = computed(() => this.username().charAt(0).toUpperCase() || '?');

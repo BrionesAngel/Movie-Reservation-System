@@ -3,6 +3,7 @@ package com.example.backend.config;
 import com.example.backend.features.auth.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -56,6 +57,13 @@ public class SecurityConfig {
                 "/swagger-ui.html",
                 "/api/webhooks/**",
                 "/backend-websocket/**")
+            .permitAll()
+            .requestMatchers(HttpMethod.GET,
+                "/api/movies/upcoming",
+                "/api/movies/*",
+                "/api/showtimes",
+                "/api/showtimes/movie/*",
+                "/api/showtimes/upcoming")
             .permitAll()
             .requestMatchers("/api/test").authenticated()
             .anyRequest().authenticated())

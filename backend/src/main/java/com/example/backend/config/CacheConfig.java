@@ -12,7 +12,6 @@ public class CacheConfig {
 
   @Bean
   public CacheManager cacheManager(
-      @Value("${app.cache.rate-limit-buckets.spec}") String rateLimitSpec,
       @Value("${app.cache.movies.spec}") String moviesSpec,
       @Value("${app.cache.movie.spec}") String movieSpec,
       @Value("${app.cache.movie-options.spec}") String movieOptionsSpec,
@@ -24,10 +23,6 @@ public class CacheConfig {
 
     CaffeineCacheManager manager = new CaffeineCacheManager();
     manager.setAllowNullValues(false);
-
-    manager.registerCustomCache(
-        "rate-limit-buckets",
-        Caffeine.from(rateLimitSpec).build());
 
     manager.registerCustomCache(
         "movies",

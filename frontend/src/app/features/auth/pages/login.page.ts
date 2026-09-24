@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { LoginRequest } from '../../../core/auth/auth.models';
@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
   loading = this.authService.loading;
@@ -35,6 +36,11 @@ export class LoginComponent {
     this.authService.login(credentials).subscribe({
       next: async () => {
         await lastValueFrom(this.authService.currentUser$());
+        const redirectTo = this.route.snapshot.queryParamMap.get('redirectTo');
+        if (redirectTo) {
+          this.router.navigateByUrl(redirectTo);
+          return;
+        }
         const user = this.authService.currentUser();
         const target = user?.role === 'ADMIN' ? '/admin/movies' : '/home/movies';
         this.router.navigate([target]);
