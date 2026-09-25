@@ -1,25 +1,94 @@
 # Movie Reservation System
-## Stack: Spring Boot 4 + Angular 22 + PostgreSQL + Docker
 
-### Backend (Java 25, Gradle)
-- Auth: JWT-based (15min access + 7-day refresh tokens with BCrypt hashing, rotation, revocation)
-- Features: Movies, Genres (22 seeded), Rooms (5), Seats (124/room), Showtimes, Reservations, Payments (Stripe, MXN)
-- Key patterns: Optimistic locking on seat reservations, 5-minute payment window, scheduled job every 60s to expire unpaid reservations, Stripe webhook for async payment status
-- Extras: Springdoc OpenAPI (Swagger), WebSocket (STOMP), Flyway migrations (15), Lombok
+A full-stack movie reservation system built with **Spring Boot** and **Angular**.
 
-### Frontend (Angular 22, Tailwind 4, Bun)
-- Auth: Login/Register with reactive forms, JWT interceptors (attach token + auto-refresh on 401), route guards (authGuard/guestGuard/adminGuard)
-- Services: AuthService (signals-based), WebSocketService (STOMP/SockJS), UiFeedbackService (toastr + SweetAlert2), MovieService, ShowtimeService, ReservationService, GenreService, RoomService, UserService
-- User UI: Movies grid (only movies with active showtimes), Showtimes by day with date navigator, movie detail, seat selection grid, Stripe Elements payment, my reservations page
-- Admin UI: Movie CRUD, showtime creation, all-reservations table, user promotion
+Users can browse movies, check showtimes, select seats, and complete reservations through an online payment flow. Administrators can manage movies, showtimes, reservations, and users.
 
-## Backend Endpoints Added for the UI
-- `GET /api/users` — list all users (admin)
-- `GET /api/reservations/mine` — current user's reservations
-- `GET /api/genres` — list genres
-- `GET /api/rooms` — list rooms
-- `ReservationSummaryResponse` now includes `showtimeId`
+## Features
 
+* User registration and login
+* Browse movies and view movie details
+* View available showtimes
+* Interactive seat selection
+* Movie reservations and online payments
+* View personal reservations
+* Admin movie management
+* Admin showtime management
+* Reservation management
+* User management
+* Real-time seat availability updates
 
-## Environment Variables
-Create a `.env` file in the root directory and configure the required environment variables.
+## Screenshots
+
+### Home
+
+![Home](screenshots/home_movies.png)
+
+### Movie Details
+
+![Movie Details](screenshots/movie_details.png)
+
+### Showtimes
+
+![Showtimes](screenshots/showtimes.png)
+
+### Seat Selection
+
+![Seat Selection](screenshots/seat_selection.png)
+
+### Payment
+
+![Payment](screenshots/payment.png)
+
+### Payment Confirmation
+
+![Payment Confirmation](screenshots/payment_confirm.png)
+
+### My Reservations
+
+![My Reservations](screenshots/my_reservations.png)
+
+## Admin
+
+### Add Movie
+
+![Add Movie](screenshots/add_movie.png)
+
+### Add Showtime
+
+![Add Showtime](screenshots/add_showtime.png)
+
+### All Reservations
+
+![All Reservations](screenshots/all_reservations.png)
+
+### Manage Users
+
+![Manage Users](screenshots/manage_users.png)
+
+## Tech Stack
+
+**Backend**
+
+* Java
+* Spring Boot
+* PostgreSQL
+* JWT
+* WebSocket
+
+**Frontend**
+
+* Angular
+* TypeScript
+
+**Infrastructure**
+
+* Docker
+* Render
+* Vercel
+* Supabase
+* Stripe
+
+## Links
+
+* [Live Demo](https://movie-system-five.vercel.app/)
