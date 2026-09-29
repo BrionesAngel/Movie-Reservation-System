@@ -92,3 +92,7 @@ Users can browse movies, check showtimes, select seats, and complete reservation
 ## Links
 
 * [Live Demo](https://movie-system-five.vercel.app/)
+
+## Project Idea
+
+Based on the [Movie Reservation System project](https://roadmap.sh/projects/movie-reservation-system) from roadmap.sh.
